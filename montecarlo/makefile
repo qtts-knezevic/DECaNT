@@ -2,7 +2,7 @@
 OS_NAME=$(shell uname -s)
 
 ifeq ($(OS_NAME),Linux)
-	CC=g++-7
+	CC=g++
 	CFLAGS = -fopenmp -std=c++17 -static
 	LFLAGS = -L. -lm -larmadillo -lpthread -lstdc++fs -std=c++17 -fopenmp
 	# LFLAGS = -lm -larmadillo -Wl,-rpath=/home/amirhossein/anaconda3/lib/ -lpthread -lstdc++fs -std=c++17 -fopenmp

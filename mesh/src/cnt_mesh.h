@@ -234,6 +234,10 @@ struct cnt_mesh : public CommonRigidBodyBase
 			count++;
 		}
 	}
+	
+	std::experimental::filesystem::path output_path() {
+		return _output_directory.path();
+	}
 
 };
 

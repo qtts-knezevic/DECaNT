@@ -23,7 +23,7 @@ inline std::experimental::filesystem::directory_entry prepare_directory(std::str
 
   if (not fs::exists(directory.path()))
   {
-    // std::cout << "warning: output directory does NOT exist!!!" << std::endl;
+    //std::cout << "warning: output directory does NOT exist!!!" << std::endl;
     std::cout << "created the directory!" << std::endl;
     fs::create_directories(directory.path());
     if (not fs::is_directory(directory.path())) throw std::invalid_argument("The input value for output directory is not acceptable.");
@@ -65,7 +65,7 @@ inline std::experimental::filesystem::directory_entry prepare_directory(std::str
 };
 
 // check a string input to make sure it points to an existing directory and return the directory_entry
-inline std::experimental::filesystem::directory_entry check_directory(std::string path, bool should_be_empty=false)
+inline std::experimental::filesystem::directory_entry check_directory(std::string path, bool should_be_empty=false, const bool create_if_absent=false)
 {
 
   std::cout << "\n..." << std::endl;
@@ -84,7 +84,17 @@ inline std::experimental::filesystem::directory_entry check_directory(std::strin
 
   if (not fs::exists(directory.path()))
   {
-    throw std::invalid_argument("directory does NOT exists!!!");
+    if (create_if_absent)
+    {
+    	std::cout << "created the directory!" << std::endl;
+    	fs::create_directories(directory.path());
+    }
+    else
+    {
+    	std::cout << "warning: output directory does NOT exist!!!" << std::endl;
+    }
+    if (not fs::is_directory(directory.path())) throw std::invalid_argument("The input value for output directory is not acceptable.");
+    return directory;
   }
 
   if (fs::is_directory(directory.path()))

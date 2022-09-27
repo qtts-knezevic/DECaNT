@@ -1,5 +1,5 @@
 {
-    "output directory":"../mesh/cnt_mesh_fiber_test",
+    "output directory":"./cnt_mesh_fiber_test",
     "keep old files":false,
 
     "visualize":false,

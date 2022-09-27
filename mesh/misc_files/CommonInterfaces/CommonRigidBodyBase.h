@@ -413,10 +413,13 @@ struct CommonRigidBodyBase : public CommonExampleInterface
 	void deleteRigidBody(btRigidBody* body)
 	{
 		int graphicsUid = body->getUserIndex();
-		m_guiHelper->removeGraphicsInstance(graphicsUid);
-
-		m_dynamicsWorld->removeRigidBody(body);
+		if (graphicsUid > -1)
+		{
+			m_guiHelper->removeGraphicsInstance(graphicsUid); // (DECaNT edit: graphicsUid not valid if not running with visual context)
+		}
 		btMotionState* ms = body->getMotionState();
+		m_dynamicsWorld->removeRigidBody(body);
+		
 		delete body;
 		delete ms;
 

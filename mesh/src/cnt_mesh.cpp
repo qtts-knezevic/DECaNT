@@ -199,7 +199,7 @@ void cnt_mesh::remove_tubes(unsigned max_number_of_tubes) {
 		tube& my_tube = tubes.front();
 		if (!my_tube.isDynamic) {
 			for (auto& b : my_tube.bodies) {
-				deleteRigidBody(b);
+				deleteRigidBody(b); // TODO segfault here
 				b = nullptr;
 			}
 			my_tube.bodies.clear();

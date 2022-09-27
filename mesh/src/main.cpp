@@ -16,6 +16,7 @@
 
 #include "cnt_mesh.h"
 
+# define MIN_NUM_TUBES 1000
 
 // this block of code and the global variable and function is used for handling mouse input and
 // moving objects via mouse. you can comment it if this capability is not needed any more.
@@ -83,6 +84,7 @@ int main(int argc, char* argv[]) {
 	bool parallel = j["parallel"];
 	bool bundle = j["bundle"];
 	double spacing = j["cnt intertube spacing [nm]"];
+	double thickness = j["cnt expected film thickness [nm]"];
 
 
 	// flag to let the graphic visualization happen
@@ -185,7 +187,7 @@ int main(int argc, char* argv[]) {
 	if(example->no_of_saved_tubes() > number_of_bundles)
 		break;
 
-	if ((example->read_Ly() > 19) && (example->no_of_saved_tubes() > 1000))
+	if ((example->read_Ly() > thickness) && (example->no_of_saved_tubes() > MIN_NUM_TUBES))
 		break;
 	}
 
@@ -207,18 +209,52 @@ int main(int argc, char* argv[]) {
 
 	}
 	#endif
+	
+	// overwrite the directory in create_fine_mesh.py with this cnt mesh's output directory
+	std::ifstream interpolationScriptIn("./python_scripts/create_fine_mesh.py");
+	std::fstream interpolationScriptOut("./python_scripts/~create_fine_mesh.py", std::ios::out);
+	const int DIR_LINE = 19;
+	int currentLineNum = 0;
+	std::string currentLine = "";
+	
+	while (currentLineNum < 19) {
+		std::getline(interpolationScriptIn, currentLine);
+		interpolationScriptOut << currentLine << "\n";
+		currentLineNum++;
+	}
+	
+	interpolationScriptOut << "DIR = '";
+	if (example->output_path().is_relative())
+		interpolationScriptOut << "."; // path must be relative to python_scripts, which is one directory down from current (mesh)
+	interpolationScriptOut << example->output_path().string() << "'";
+	std::getline(interpolationScriptIn, currentLine);
+	
+	while (!interpolationScriptIn.eof())
+	{
+		std::getline(interpolationScriptIn, currentLine);
+		interpolationScriptOut << "\n" << currentLine;
+		currentLineNum++;
+	}
+	
+	interpolationScriptOut.close();
+	std::experimental::filesystem::remove("./python_scripts/create_fine_mesh.py");
+	std::experimental::filesystem::rename("./python_scripts/~create_fine_mesh.py", "./python_scripts/create_fine_mesh.py");
+	
+	
 	// print the end time and the runtime
 	std::clock_t end = std::clock();
 	std::time_t end_time = std::time(nullptr);
 	std::cout << std::endl << "end time:" << std::endl << std::asctime(std::localtime(&end_time));
 	std::cout << "runtime: " << std::difftime(end_time,start_time) << " seconds" << std::endl << std::endl;
-
-
+	
 	example->exitPhysics();
 	delete example;
 	#ifdef VISUAL
 		delete app;
 	#endif
+	 
+	
+	
 	return 0;
 }
 
