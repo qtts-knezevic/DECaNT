@@ -446,8 +446,8 @@ void cnt_mesh::add_tube() {
 
 // this method adds bundle in the xz plane
 void cnt_mesh::add_bundle_in_xz(bool parallel) {
-
-	const float pi = 3.14159265358979323846;
+	const float pi  = 3.14159265358979323846;
+	const float rt3 = 1.73205080756887729353;
 
 	tubes.push_back(tube());
 	tube& my_tube1 = tubes.back();
@@ -490,13 +490,14 @@ void cnt_mesh::add_bundle_in_xz(bool parallel) {
 	}
 	// We will add 7 tubes at a time to adhere to the hexagonally packed bundle morphology
 	// Tube 1 will be the center tube, and tubes 2-7 will utilize a hinge constraint to attach to tube 1
-	my_tube1.diameter = _tube_diameter[c_index];
-	my_tube2.diameter = _tube_diameter[c_index];
-	my_tube3.diameter = _tube_diameter[c_index];
-	my_tube4.diameter = _tube_diameter[c_index];
-	my_tube5.diameter = _tube_diameter[c_index];
-	my_tube6.diameter = _tube_diameter[c_index];
-	my_tube7.diameter = _tube_diameter[c_index];
+	float diameter = _tube_diameter[c_index];
+	my_tube1.diameter = diameter;
+	my_tube2.diameter = diameter;
+	my_tube3.diameter = diameter;
+	my_tube4.diameter = diameter;
+	my_tube5.diameter = diameter;
+	my_tube6.diameter = diameter;
+	my_tube7.diameter = diameter;
 
 
 	int l = std::rand() % _tube_length.size(); // index related to the length of the tube
@@ -513,8 +514,10 @@ void cnt_mesh::add_bundle_in_xz(bool parallel) {
 
 	// set drop orientation of the tube
 	float angle = parallel ? 0 : (float(std::rand() % 1000) / 1000. * pi);
-	btVector3 ax(std::cos(angle), 0, std::sin(angle)); // axis vector for the tube sections
-
+	float x_comp = std::cos(angle);
+	float y_comp = std::sin(angle);
+	btVector3 ax(x_comp, 0, y_comp); // axis vector for the tube sections
+	
 	// set a quaternion to determine the orientation of tube sections, note that the initial orientation of the tube sections are along the y-axis
 	btQuaternion qt;
 	btVector3 q_axis = ax.rotate(btVector3(0, 1, 0), pi / 2); // axis vector for the quaternion describing orientation of tube sections
@@ -543,19 +546,29 @@ void cnt_mesh::add_bundle_in_xz(bool parallel) {
 
 		btVector3 origin(ax_loc * ax + drop_coor);
 
-		// create a btTransform that discribes the orientation and location of the rigidBody
+		// create a btTransform that describes the orientation of the central tube rigidBody
+		// (outer tubes must have an offset from central tube location)
 		btTransform startTransform;
 		startTransform.setOrigin(origin);
 		startTransform.setRotation(qt);
-
-
+		
+		x_comp *= diameter;
+		y_comp *= diameter;
+		
 		// create rigid bodies
+		// EXPERIMENTAL: give each a position offset from the center
 		my_tube1.bodies.push_back(createRigidBody(mass, startTransform, colShape));	// no static object
+		startTransform.setOrigin(origin + *(new btVector3(-x_comp, 0, -y_comp)));
 		my_tube2.bodies.push_back(createRigidBody(mass, startTransform, colShape));	// no static object
+		startTransform.setOrigin(origin + *(new btVector3(x_comp * -0.5, diameter * rt3/2, y_comp * -0.5)));
 		my_tube3.bodies.push_back(createRigidBody(mass, startTransform, colShape));	// no static object
+		startTransform.setOrigin(origin + *(new btVector3(x_comp * 0.5, diameter * rt3/2, y_comp * 0.5)));
 		my_tube4.bodies.push_back(createRigidBody(mass, startTransform, colShape));	// no static object
+		startTransform.setOrigin(origin + *(new btVector3(x_comp, 0, y_comp)));
 		my_tube5.bodies.push_back(createRigidBody(mass, startTransform, colShape));	// no static object
+		startTransform.setOrigin(origin + *(new btVector3(x_comp * 0.5, diameter * -rt3/2, y_comp * diameter * 0.5)));
 		my_tube6.bodies.push_back(createRigidBody(mass, startTransform, colShape));	// no static object
+		startTransform.setOrigin(origin + *(new btVector3(x_comp * -0.5, diameter * -rt3/2, y_comp * -0.5)));
 		my_tube7.bodies.push_back(createRigidBody(mass, startTransform, colShape));	// no static object
 		
 		// my_tube.bodies.back()->setMassProps(mass,btVector3(1,0,1)); // turn off rotation along the y-axis of the cylinder shapes
@@ -708,7 +721,6 @@ void cnt_mesh::add_bundle_in_xz(bool parallel) {
 		my_tube7.constraints.push_back(circleSpring6);
 		my_tube7.constraints.push_back(circleSpring12);
 		
-		
 		// EXPERIMENTAL: hinge constraints between touching outer tubes
 		btHingeConstraint* circleSpring23a = new btHingeConstraint(*b3, *b5, frameInA, frameInB);
 		btHingeConstraint* circleSpring34a = new btHingeConstraint(*b5, *b7, frameInA, frameInB);
@@ -771,7 +783,6 @@ void cnt_mesh::add_bundle_in_xz(bool parallel) {
 
 		my_tube7.constraints.push_back(circleSpring67b);
 		my_tube7.constraints.push_back(circleSpring72b);
-
 	}
 
 
@@ -836,7 +847,7 @@ void cnt_mesh::add_single_tube_in_xz(bool parallel) {
 
 		btVector3 origin(ax_loc * ax + drop_coor);
 
-		// create a btTransform that discribes the orientation and location of the rigidBody
+		// create a btTransform that describes the orientation and location of the rigidBody
 		btTransform startTransform;
 		startTransform.setOrigin(origin);
 		startTransform.setRotation(qt);
