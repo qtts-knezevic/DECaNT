@@ -328,6 +328,7 @@ void cnt_mesh::save_json_properties(nlohmann::json j) {
 	json_file.close();
 };
 
+/*
 // add a tube with a diameter randomly picked from prebuilt colShapes for tube sections
 void cnt_mesh::add_tube() {
 
@@ -440,6 +441,7 @@ void cnt_mesh::add_tube() {
 	#endif
 	
 }
+*/
 
 
 // this method adds bundle in the xz plane
@@ -486,8 +488,8 @@ void cnt_mesh::add_bundle_in_xz(bool parallel) {
 		else
 			c_index++;
 	}
-  // We will add 7 tubes at a time to adhere to the hexagonally packed bundle morphology
-  // Tube 1 will be the center tube, and tubes 2-7 will utilize a hinge constraint to attach to tube 1
+	// We will add 7 tubes at a time to adhere to the hexagonally packed bundle morphology
+	// Tube 1 will be the center tube, and tubes 2-7 will utilize a hinge constraint to attach to tube 1
 	my_tube1.diameter = _tube_diameter[c_index];
 	my_tube2.diameter = _tube_diameter[c_index];
 	my_tube3.diameter = _tube_diameter[c_index];
@@ -555,7 +557,8 @@ void cnt_mesh::add_bundle_in_xz(bool parallel) {
 		my_tube5.bodies.push_back(createRigidBody(mass, startTransform, colShape));	// no static object
 		my_tube6.bodies.push_back(createRigidBody(mass, startTransform, colShape));	// no static object
 		my_tube7.bodies.push_back(createRigidBody(mass, startTransform, colShape));	// no static object
-			// my_tube.bodies.back()->setMassProps(mass,btVector3(1,0,1)); // turn off rotation along the y-axis of the cylinder shapes
+		
+		// my_tube.bodies.back()->setMassProps(mass,btVector3(1,0,1)); // turn off rotation along the y-axis of the cylinder shapes
 		my_tube1.body_length.push_back(sec_length_plus_distances);
 		my_tube2.body_length.push_back(sec_length_plus_distances);
 		my_tube3.body_length.push_back(sec_length_plus_distances);
@@ -595,7 +598,7 @@ void cnt_mesh::add_bundle_in_xz(bool parallel) {
 		// centerSpring->m_setting.m_impulseClamp = 0; //The m_impulseClamp value controls how quickly the dynamic rigid body comes to rest. The defualt value is 0.0
 
 
-		// cone constarint
+		// cone constraint
 		btTransform frameInA, frameInB;
 		frameInA = btTransform::getIdentity();
 		frameInA.getBasis().setEulerZYX(1, 0, 1);
@@ -620,7 +623,7 @@ void cnt_mesh::add_bundle_in_xz(bool parallel) {
 			1.0F // _relaxationFactor
 		);
 
-		// hinge constarint
+		// hinge constraint
 		frameInA = btTransform::getIdentity();
 		frameInA.setOrigin(btVector3(my_tube1.diameter, 0, 0));
 		frameInB = btTransform::getIdentity();
@@ -704,6 +707,70 @@ void cnt_mesh::add_bundle_in_xz(bool parallel) {
 
 		my_tube7.constraints.push_back(circleSpring6);
 		my_tube7.constraints.push_back(circleSpring12);
+		
+		
+		// EXPERIMENTAL: hinge constraints between touching outer tubes
+		btHingeConstraint* circleSpring23a = new btHingeConstraint(*b3, *b5, frameInA, frameInB);
+		btHingeConstraint* circleSpring34a = new btHingeConstraint(*b5, *b7, frameInA, frameInB);
+		btHingeConstraint* circleSpring45a = new btHingeConstraint(*b7, *b9, frameInA, frameInB);
+		btHingeConstraint* circleSpring56a = new btHingeConstraint(*b9, *b11, frameInA, frameInB);
+		btHingeConstraint* circleSpring67a = new btHingeConstraint(*b11, *b13, frameInA, frameInB);
+		btHingeConstraint* circleSpring72a = new btHingeConstraint(*b13, *b3, frameInA, frameInB);
+		btHingeConstraint* circleSpring23b = new btHingeConstraint(*b4, *b6, frameInA, frameInB);
+		btHingeConstraint* circleSpring34b = new btHingeConstraint(*b6, *b8, frameInA, frameInB);
+		btHingeConstraint* circleSpring45b = new btHingeConstraint(*b8, *b10, frameInA, frameInB);
+		btHingeConstraint* circleSpring56b = new btHingeConstraint(*b10, *b12, frameInA, frameInB);
+		btHingeConstraint* circleSpring67b = new btHingeConstraint(*b12, *b14, frameInA, frameInB);
+		btHingeConstraint* circleSpring72b = new btHingeConstraint(*b14, *b4, frameInA, frameInB);
+		
+		m_dynamicsWorld->addConstraint(circleSpring23a, false);
+		m_dynamicsWorld->addConstraint(circleSpring34a, false);
+		m_dynamicsWorld->addConstraint(circleSpring45a, false);
+		m_dynamicsWorld->addConstraint(circleSpring56a, false);
+		m_dynamicsWorld->addConstraint(circleSpring67a, false);
+		m_dynamicsWorld->addConstraint(circleSpring72a, false);
+		m_dynamicsWorld->addConstraint(circleSpring23b, false);
+		m_dynamicsWorld->addConstraint(circleSpring34b, false);
+		m_dynamicsWorld->addConstraint(circleSpring45b, false);
+		m_dynamicsWorld->addConstraint(circleSpring56b, false);
+		m_dynamicsWorld->addConstraint(circleSpring67b, false);
+		m_dynamicsWorld->addConstraint(circleSpring72b, false);
+		
+		my_tube2.constraints.push_back(circleSpring72a);
+		my_tube2.constraints.push_back(circleSpring23a);
+
+		my_tube3.constraints.push_back(circleSpring23a);
+		my_tube3.constraints.push_back(circleSpring34a);
+
+		my_tube4.constraints.push_back(circleSpring34a);
+		my_tube4.constraints.push_back(circleSpring45a);
+
+		my_tube5.constraints.push_back(circleSpring45a);
+		my_tube5.constraints.push_back(circleSpring56a);
+
+		my_tube6.constraints.push_back(circleSpring56a);
+		my_tube6.constraints.push_back(circleSpring67a);
+
+		my_tube7.constraints.push_back(circleSpring67a);
+		my_tube7.constraints.push_back(circleSpring72a);
+		
+		my_tube2.constraints.push_back(circleSpring72b);
+		my_tube2.constraints.push_back(circleSpring23b);
+
+		my_tube3.constraints.push_back(circleSpring23b);
+		my_tube3.constraints.push_back(circleSpring34b);
+
+		my_tube4.constraints.push_back(circleSpring34b);
+		my_tube4.constraints.push_back(circleSpring45b);
+
+		my_tube5.constraints.push_back(circleSpring45b);
+		my_tube5.constraints.push_back(circleSpring56b);
+
+		my_tube6.constraints.push_back(circleSpring56b);
+		my_tube6.constraints.push_back(circleSpring67b);
+
+		my_tube7.constraints.push_back(circleSpring67b);
+		my_tube7.constraints.push_back(circleSpring72b);
 
 	}
 
@@ -716,7 +783,6 @@ void cnt_mesh::add_bundle_in_xz(bool parallel) {
 }
 
 
-// TODO chirality is not added yet
 // this method adds parallel tube like blinds in the xz plane
 void cnt_mesh::add_single_tube_in_xz(bool parallel) {
 	const float pi = 3.14159265358979323846;
@@ -797,7 +863,7 @@ void cnt_mesh::add_single_tube_in_xz(bool parallel) {
 		// centerSpring->m_setting.m_impulseClamp = 0; //The m_impulseClamp value controls how quickly the dynamic rigid body comes to rest. The defualt value is 0.0
 
 
-		// cone constarint
+		// cone constraint
 		btTransform frameInA, frameInB;
 		frameInA = btTransform::getIdentity();
 		frameInA.getBasis().setEulerZYX(1, 0, 1);

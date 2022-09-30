@@ -217,10 +217,10 @@ int main(int argc, char* argv[]) {
 	int currentLineNum = 0;
 	std::string currentLine = "";
 	
-	while (currentLineNum < 19) {
+	for (; currentLineNum < DIR_LINE; currentLineNum++)
+	{
 		std::getline(interpolationScriptIn, currentLine);
 		interpolationScriptOut << currentLine << "\n";
-		currentLineNum++;
 	}
 	
 	interpolationScriptOut << "DIR = '";
