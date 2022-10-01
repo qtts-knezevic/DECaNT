@@ -43,3 +43,7 @@ main: object
 clean:
 	@rm -f *.o *.exe
 	@rm -rf $(OBJDIR)
+
+run:
+	./main.exe
+	cd python_scripts; python3 create_fine_mesh.py --create_cnts

@@ -36,3 +36,6 @@ main: object
 clean:
 	@rm -f *.o *.exe
 	@rm -rf $(OBJDIR)
+
+run: main
+	./main.exe
