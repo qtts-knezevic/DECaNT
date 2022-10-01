@@ -199,7 +199,7 @@ void cnt_mesh::remove_tubes(unsigned max_number_of_tubes) {
 		tube& my_tube = tubes.front();
 		if (!my_tube.isDynamic) {
 			for (auto& b : my_tube.bodies) {
-				deleteRigidBody(b); // TODO segfault here
+				deleteRigidBody(b);
 				b = nullptr;
 			}
 			my_tube.bodies.clear();
@@ -298,24 +298,32 @@ void cnt_mesh::save_one_tube(tube& t) {
 }
 
 void cnt_mesh::get_Ly() { //TODO the top is set to be the top of settled pile
+	// Ly should be about the height of the saved tubes such that generated mesh is correct height
+	
 	btTransform trans;
-	float avgY = 0;
-	int count = 0;
+	float maxNonDynamic = 0.0;
+	float minDynamic = INFINITY;
+	
 	for (const auto& t : tubes) {
 		if (t.isDynamic) {
 			for (const auto& b : t.bodies) {
 				b->getMotionState()->getWorldTransform(trans);
-				avgY += trans.getOrigin().getY();
-				count++;
+				minDynamic = trans.getOrigin().getY() < minDynamic ? trans.getOrigin().getY() : minDynamic;
+			}
+		}
+		else {
+			for (const auto& b : t.bodies) {
+				b->getMotionState()->getWorldTransform(trans);
+				maxNonDynamic = trans.getOrigin().getY() > maxNonDynamic ? trans.getOrigin().getY() : maxNonDynamic;
 			}
 		}
 	}
-
-	if (count == 0) {
+	
+	if (minDynamic == INFINITY) {
 		Ly = 0;
 	}
 	else {
-		Ly = avgY / float(count);
+		Ly = (maxNonDynamic + minDynamic) / 2.0;
 	}
 
 }

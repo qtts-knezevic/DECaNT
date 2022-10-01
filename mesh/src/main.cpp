@@ -210,6 +210,13 @@ int main(int argc, char* argv[]) {
 	}
 	#endif
 	
+	// save all non-dynamic tubes to bring mesh up to measured height
+	if (bundle)
+		example->save_tubes(number_of_active_bundles * 6);
+	else
+		example->save_tubes(number_of_active_bundles);
+	std::cout << "number of saved tubes: " << example->no_of_saved_tubes() << ",  height [nm]:" << example->read_Ly() << "      \r" << std::flush;
+	
 	// overwrite the directory in create_fine_mesh.py with this cnt mesh's output directory
 	std::ifstream interpolationScriptIn("./python_scripts/create_fine_mesh.py");
 	std::fstream interpolationScriptOut("./python_scripts/~create_fine_mesh.py", std::ios::out);
