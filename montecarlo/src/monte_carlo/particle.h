@@ -151,17 +151,17 @@ public:
   // get ith value of diffusion length
   const double& diff_len(const int& i) const {return _diff_len(i);};
 
-  // get the incremental dispalcement of the particle
+  // get the incremental displacement of the particle
   const arma::vec& delta_pos() const { return _delta_pos; };
 
-  // get the i'th element of the incremental dispalcement of the particle
+  // get the i'th element of the incremental displacement of the particle
   const double& delta_pos(const int& i) const { return _delta_pos(i); };
 
   // // get total displacement of particle
   // // TODO Use this function with extra care.
   // const arma::vec& total_displacement() const { arma::vec _total_delta_pos = _delta_pos + _past_delta_pos; return _total_delta_pos; };
 
-  // // get the i'th element of the incremental dispalcement of the particle
+  // // get the i'th element of the incremental displacement of the particle
   // const double& total_displacement(const int& i) const { arma::vec _total_delta_pos = _delta_pos + _past_delta_pos; return _total_delta_pos(i); };
 
   // return the total scatter time of this exciton

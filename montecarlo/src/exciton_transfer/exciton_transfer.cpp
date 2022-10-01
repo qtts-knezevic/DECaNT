@@ -9,6 +9,8 @@
 #include "constants.h"
 #include "../helper/progress.hpp"
 
+float epsr; // relative permittivity. global or else it has to pass through a confusing subset of function calls EXPERIMENTAL
+
 // calculate and plot Q matrix element between two exciton bands
 void exciton_transfer::save_Q_matrix_element(const int i_n_principal, const int f_n_principal)
 {
@@ -296,7 +298,7 @@ std::complex<double> exciton_transfer::calculate_Q(const matching_states& pair) 
   };
 
   double coeff = (std::pow(constants::q0,2)*pair.i.cnt_obj->Au()*pair.f.cnt_obj->Au())/\
-                 (16*std::pow(constants::pi,3)*constants::eps0*pair.i.cnt_obj->radius()*pair.f.cnt_obj->radius()*\
+                 (16*std::pow(constants::pi,3)*epsr*constants::eps0*pair.i.cnt_obj->radius()*pair.f.cnt_obj->radius()*\
                   std::sqrt(pair.i.cnt_obj->length_in_meter()*pair.f.cnt_obj->length_in_meter()));
 
   return std::complex<double>(coeff)*std::conj(Q_partial(pair.i))*Q_partial(pair.f);

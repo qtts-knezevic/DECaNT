@@ -70,15 +70,15 @@ int main(int argc, char *argv[]) {
 
   while (sim.time() < sim.kubo_max_time()) {
     sim.kubo_step(time_step);
-    sim.kubo_save_avg_dispalcement_squared();
-    sim.kubo_save_individual_particle_dispalcements();
+    sim.kubo_save_avg_displacement_squared();
+    sim.kubo_save_individual_particle_displacements();
     sim.kubo_save_individual_particle_positions();
     // sim.kubo_save_diffusion_tensor();
 
     std::cout << "kubo simulation: current time [seconds]: " << std::scientific << sim.time() << " .... "
               << "max time [seconds]: " << sim.kubo_max_time() << "\r" << std::flush;
   }
-  sim.kubo_save_diffusion_length();
+  sim.kubo_save_diffusion_length(); // TODO see if supposed to be nonzero for zero quench site density
   std::cout << "\n" << std::endl;
   sim.print_exciton_scatter_times();
 

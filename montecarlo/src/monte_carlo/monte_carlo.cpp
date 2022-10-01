@@ -16,6 +16,7 @@
 #include "../helper/progress.hpp"
 #include "monte_carlo.h"
 
+extern float epsr;
 
 namespace mc
 {
@@ -25,6 +26,8 @@ namespace mc
     assert(j.count("rate type")>0);
 
     std::string rate_type = j["rate type"].get<std::string>();
+    
+    epsr = j["relative permittivity"].get<float>(); // EXPERIMENTAL
 
     std::cout << "\ninitializing scattering table with " << rate_type << "..." << std::endl;
 
@@ -57,7 +60,8 @@ namespace mc
 		  all_tables[i] = std::vector<scattering_struct>(size(cnts));
 		  for (int j = 0; j < size(cnts); j++) {
         std::experimental::filesystem::path path_ref =_scatter_table_directory.path();
-        path_ref /= std::to_string(cnts[i].chirality()[0])+std::to_string(cnts[i].chirality()[1])+std::to_string(cnts[j].chirality()[0])+std::to_string(cnts[j].chirality()[1])+"scat_table";
+        path_ref /= std::to_string(cnts[i].chirality()[0])+std::to_string(cnts[i].chirality()[1])+std::to_string(cnts[j].chirality()[0])
+        	+std::to_string(cnts[j].chirality()[1])+"_"+std::to_string(epsr)+"scat_table";
 
         if(check_scat_tab(path_ref))
           all_tables[i][j] = recovery_scatt_table(path_ref,cnts[i], cnts[j]);
@@ -114,10 +118,11 @@ namespace mc
       c.load(std::string(path) + std::to_string(i_th)+ ".rates.dat");
       i_th++;});
 
-    scattering_struct scat_table(rate,theta,z_shift,axis_shift_1,axis_shift_2, d_cnt.chirality(), a_cnt.chirality());
+    scattering_struct scat_table(rate,theta,z_shift,axis_shift_1,axis_shift_2, d_cnt.chirality(), a_cnt.chirality(), epsr);
 
     std::experimental::filesystem::path path_out =_output_directory.path();
-    path_out /= std::to_string(d_cnt.chirality()[0])+std::to_string(d_cnt.chirality()[1])+std::to_string(a_cnt.chirality()[0])+std::to_string(a_cnt.chirality()[1])+"scat_table";
+    path_out /= std::to_string(d_cnt.chirality()[0])+std::to_string(d_cnt.chirality()[1])+std::to_string(a_cnt.chirality()[0])
+    		+std::to_string(a_cnt.chirality()[1])+"_"+std::to_string(epsr)+"scat_table";
     std::experimental::filesystem::create_directory(path_out);
 
     scat_table.save_visible(path_out);
@@ -197,7 +202,7 @@ namespace mc
       }
     }
 
-    scattering_struct scat_table(rate,theta,z_shift,axis_shift_1,axis_shift_2, d_cnt.chirality(), a_cnt.chirality());
+    scattering_struct scat_table(rate,theta,z_shift,axis_shift_1,axis_shift_2, d_cnt.chirality(), a_cnt.chirality(), epsr);
 
     double max_rate = 0;
     double min_rate = 10e15;
@@ -433,11 +438,11 @@ namespace mc
   };
 
   // save the displacement of individual particles in kubo simulation
-  void monte_carlo::kubo_save_individual_particle_dispalcements() {
+  void monte_carlo::kubo_save_individual_particle_displacements() {
     if (! _displacement_file_x.is_open()) {
-      _displacement_file_x.open(_output_directory.path() / "particle_dispalcement.x.dat", std::ios::out);
-      _displacement_file_y.open(_output_directory.path() / "particle_dispalcement.y.dat", std::ios::out);
-      _displacement_file_z.open(_output_directory.path() / "particle_dispalcement.z.dat", std::ios::out);
+      _displacement_file_x.open(_output_directory.path() / "particle_displacement.x.dat", std::ios::out);
+      _displacement_file_y.open(_output_directory.path() / "particle_displacement.y.dat", std::ios::out);
+      _displacement_file_z.open(_output_directory.path() / "particle_displacement.z.dat", std::ios::out);
 
       _displacement_file_x << std::showpos << std::scientific;
       _displacement_file_y << std::showpos << std::scientific;
@@ -508,7 +513,7 @@ namespace mc
     _position_file_z << std::endl;
   };
 
-  void monte_carlo::kubo_save_avg_dispalcement_squared() {
+  void monte_carlo::kubo_save_avg_displacement_squared() {
     if (!_displacement_squard_file.is_open()) {
       _displacement_squard_file.open(_output_directory.path() / "particle_displacement.avg.squared.dat", std::ios::out);
 

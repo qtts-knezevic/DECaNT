@@ -105,7 +105,7 @@ private:
   // maximum time for the kubo simulation
   double _max_time;
 
-  // file to record particle dispalcements
+  // file to record particle displacements
   std::fstream _displacement_file_x, _displacement_file_y, _displacement_file_z;
 
   // file to record average of square of displacements in each direction
@@ -1005,10 +1005,10 @@ private:
   void kubo_step(double dt);
 
   // save the displacement of individual particles in kubo simulation
-  void kubo_save_individual_particle_dispalcements();
+  void kubo_save_individual_particle_displacements();
 
   // save the average displacement of particles in kubo simulation
-  void kubo_save_avg_dispalcement_squared();
+  void kubo_save_avg_displacement_squared();
 
   void kubo_save_diffusion_tensor();
 

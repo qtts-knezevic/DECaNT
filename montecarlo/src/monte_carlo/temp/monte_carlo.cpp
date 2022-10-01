@@ -356,11 +356,11 @@ namespace mc
   };
 
   // save the displacement of individual particles in kubo simulation
-  void monte_carlo::kubo_save_individual_particle_dispalcements() {
+  void monte_carlo::kubo_save_individual_particle_displacements() {
     if (! _displacement_file_x.is_open()) {
-      _displacement_file_x.open(_output_directory.path() / "particle_dispalcement.x.dat", std::ios::out);
-      _displacement_file_y.open(_output_directory.path() / "particle_dispalcement.y.dat", std::ios::out);
-      _displacement_file_z.open(_output_directory.path() / "particle_dispalcement.z.dat", std::ios::out);
+      _displacement_file_x.open(_output_directory.path() / "particle_displacement.x.dat", std::ios::out);
+      _displacement_file_y.open(_output_directory.path() / "particle_displacement.y.dat", std::ios::out);
+      _displacement_file_z.open(_output_directory.path() / "particle_displacement.z.dat", std::ios::out);
 
       _displacement_file_x << std::showpos << std::scientific;
       _displacement_file_y << std::showpos << std::scientific;
@@ -393,9 +393,9 @@ namespace mc
     _displacement_file_z << std::endl;
   };
 
-  void monte_carlo::kubo_save_avg_dispalcement_squared() {
+  void monte_carlo::kubo_save_avg_displacement_squared() {
     if (!_displacement_squard_file.is_open()) {
-      _displacement_squard_file.open(_output_directory.path() / "particle_dispalcement.avg.squared.dat", std::ios::out);
+      _displacement_squard_file.open(_output_directory.path() / "particle_displacement.avg.squared.dat", std::ios::out);
 
       _displacement_squard_file << std::showpos << std::scientific;
       

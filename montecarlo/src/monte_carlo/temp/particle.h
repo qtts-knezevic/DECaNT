@@ -120,10 +120,10 @@ public:
 
   const double& diff_len(const int& i) const {return _diff_len(i);};
 
-  // get the incremental dispalcement of the particle
+  // get the incremental displacement of the particle
   const arma::vec& delta_pos() const { return _delta_pos; };
 
-  // get the i'th element of the incremental dispalcement of the particle
+  // get the i'th element of the incremental displacement of the particle
   const double& delta_pos(const int& i) const { return _delta_pos(i); };
 
 }; //particle class

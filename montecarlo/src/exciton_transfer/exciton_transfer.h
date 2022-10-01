@@ -35,7 +35,7 @@ private:
 public:
   // constructor
   exciton_transfer(const cnt& cnt1, const cnt& cnt2) {
-    _directory = prepare_directory("~/research/exciton_transfer",true);
+    _directory = prepare_directory("./exciton_transfer",true);
 
     _cnts = {&cnt1, &cnt2};
     _temperature = 300;

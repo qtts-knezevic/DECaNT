@@ -1,7 +1,7 @@
 {
   "cnts":{
       "comment": "the cnts listed in this section ARE used in the monte carlo simulation",
-      "directory": "~/research/monte_carlo/exciton_energy/",
+      "directory": "./exciton_energy/",
       "1": {
           "keep old results": false,
           "chirality": [4,2],
@@ -15,10 +15,10 @@
   },
 
 "exciton monte carlo": {
-  "mesh input directory": "~/research/mesh/cnt_mesh_fiber_random_bundle_fast_test",
-  "scatter table directory": "~/research/monte_carlo/scatter_table",
+  "mesh input directory": "../mesh/cnt_mesh_fiber_test",
+  "scatter table directory": "./scatter_table",
 
-  "output directory": "~/research/monte_carlo/monte_carlo_fiber_random_bundle_fast_test1",
+  "output directory": "./cnt_mesh_fiber_test",
   "keep old results": false,
 
   "rate type": "davoody",
