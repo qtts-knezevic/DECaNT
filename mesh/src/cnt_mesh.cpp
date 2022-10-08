@@ -153,19 +153,13 @@ void cnt_mesh::freeze_bundles(unsigned number_of_active_bundles) {
 
 	auto it = std::prev(bundles.end(), number_of_active_bundles + 1);
 	
-	while (it->isDynamic) {
+	while (1) {
 		auto my_tube = std::prev(it->subtubes.end());
 		while (my_tube->isDynamic) {
 			// make the sections static by putting their mass equal to zero
 			for (auto& b : my_tube->bodies) {
 				b->setMassProps(0, btVector3(0, 0, 0));
-			}
-
-			//delete constraints between the tube sections
-			for (auto& c : my_tube->constraints) {
-				m_dynamicsWorld->removeConstraint(c);
-				delete c;
-				c = nullptr;
+				// TODO why does this never iterate?
 			}
 
 			my_tube->constraints.clear();
@@ -176,13 +170,22 @@ void cnt_mesh::freeze_bundles(unsigned number_of_active_bundles) {
 			else
 				--my_tube;
 		}
-		it->isDynamic = false;
+		
+		// delete constraints between all tubes' sections and between tubes in the bundle
+		for (auto& c : it->constraints) {
+			m_dynamicsWorld->removeConstraint(c);
+			delete c;
+			c = nullptr;
+		}
+		it->constraints.clear();
+			
 		if (it == bundles.begin())
 			break;
 		else
 			--it;
 	}
 	
+	// shrink bundle list now since it's not done in remove_tubes
 	bundle reduce = bundles.front();
 	while(!reduce.isDynamic) {
 		bundles.pop_front();
@@ -276,8 +279,7 @@ void cnt_mesh::save_one_tube(tube& t) {
 	position_file << "tube number: " << number_of_saved_tubes << " ; ";
 //	orientation_file << "tube number: " << number_of_saved_tubes << " ; ";
 	chirality_file << "tube number: " << number_of_saved_tubes << " ; ";
-
-	int i = 0;
+	
 	btTransform trans;
 	// std::cout << "position x: ";
 	for (const auto& b : t.bodies) {
@@ -303,12 +305,9 @@ void cnt_mesh::save_one_tube(tube& t) {
 
 void cnt_mesh::get_Ly() {
 	// Ly should be about at the height of the tubes that will be saved if the simulation were to exit.
-	// By testing both parallel and random alignment, the best reference for Ly is between the
-	// average y for all dynamic tubes and average y for the very highest non-dynamic tubes.
+	// This is found by the average of the highest few non-dynamic tubes.
 	
 	btTransform trans;
-	float dynamicY = 0.;
-	int dynamicCnt = 0;
 	
 	float nonDynamicY = 0.;
 	int nonDynamicCnt = 0;
@@ -318,14 +317,7 @@ void cnt_mesh::get_Ly() {
 	
 	
 	for (const auto& t : tubes) {
-		if (t.isDynamic) {
-			for (const auto& b : t.bodies) {
-				b->getMotionState()->getWorldTransform(trans);
-				dynamicY += trans.getOrigin().getY();
-				dynamicCnt++;
-			}
-		}
-		else {
+		if (!t.isDynamic) {
 			for (const auto& b : t.bodies) {
 				b->getMotionState()->getWorldTransform(trans);
 				// if this y coord is highest than lowest in max list, add it
@@ -344,10 +336,6 @@ void cnt_mesh::get_Ly() {
 			}
 		}
 	}
-
-	if (dynamicCnt > 0) {
-		dynamicY = dynamicY / float(dynamicCnt);
-	}
 	
 	for (int i = 0; i < 10; i++) {
 		nonDynamicY += (maxsNonDynamic[i] > -INFINITY) ? maxsNonDynamic[i] : 0.;
@@ -359,7 +347,7 @@ void cnt_mesh::get_Ly() {
 	}
 	
 	
-	Ly = (nonDynamicY + dynamicY) / 2.0;
+	Ly = nonDynamicY;
 }
 
 void cnt_mesh::get_maxY() {
@@ -506,8 +494,7 @@ void cnt_mesh::add_tube() {
 // this method adds bundle in the xz plane
 void cnt_mesh::add_bundle_in_xz(bool parallel, float offset) {
 	const float pi  = 3.14159265358979323846;
-	const float rt3 = 1.73205080756887729353;
-
+	
 	tubes.push_back(tube());
 	tube& my_tube1 = tubes.back();
 
@@ -531,13 +518,6 @@ void cnt_mesh::add_bundle_in_xz(bool parallel, float offset) {
 
 	bundles.push_back(bundle());
 	bundle& my_bundle = bundles.back();
-	my_bundle.subtubes.push_back(my_tube1);
-	my_bundle.subtubes.push_back(my_tube2);
-	my_bundle.subtubes.push_back(my_tube3);
-	my_bundle.subtubes.push_back(my_tube4);
-	my_bundle.subtubes.push_back(my_tube5);
-	my_bundle.subtubes.push_back(my_tube6);
-	my_bundle.subtubes.push_back(my_tube7);
 
 	int d = std::rand() % 100; // index related to the diameter of the tube
 	int c_index = 0;
@@ -835,8 +815,48 @@ void cnt_mesh::add_bundle_in_xz(bool parallel, float offset) {
 
 		my_tube7.constraints.push_back(circleSpring67b);
 		my_tube7.constraints.push_back(circleSpring72b);
+		
+		// associate all constraints with the bundle as well
+		my_bundle.constraints.push_back(centerSpring);
+		my_bundle.constraints.push_back(centerSpring2);
+		my_bundle.constraints.push_back(centerSpring3);
+		my_bundle.constraints.push_back(centerSpring4);
+		my_bundle.constraints.push_back(centerSpring5);
+		my_bundle.constraints.push_back(centerSpring6);
+		my_bundle.constraints.push_back(centerSpring7);
+		my_bundle.constraints.push_back(circleSpring);
+		my_bundle.constraints.push_back(circleSpring2);
+		my_bundle.constraints.push_back(circleSpring3);
+		my_bundle.constraints.push_back(circleSpring4);
+		my_bundle.constraints.push_back(circleSpring5);
+		my_bundle.constraints.push_back(circleSpring6);
+		my_bundle.constraints.push_back(circleSpring7);
+		my_bundle.constraints.push_back(circleSpring8);
+		my_bundle.constraints.push_back(circleSpring9);
+		my_bundle.constraints.push_back(circleSpring10);
+		my_bundle.constraints.push_back(circleSpring11);
+		my_bundle.constraints.push_back(circleSpring12);
+		my_bundle.constraints.push_back(circleSpring23a);
+		my_bundle.constraints.push_back(circleSpring34a);
+		my_bundle.constraints.push_back(circleSpring45a);
+		my_bundle.constraints.push_back(circleSpring56a);
+		my_bundle.constraints.push_back(circleSpring67a);
+		my_bundle.constraints.push_back(circleSpring72a);
+		my_bundle.constraints.push_back(circleSpring23b);
+		my_bundle.constraints.push_back(circleSpring34b);
+		my_bundle.constraints.push_back(circleSpring45b);
+		my_bundle.constraints.push_back(circleSpring56b);
+		my_bundle.constraints.push_back(circleSpring67b);
+		my_bundle.constraints.push_back(circleSpring72b);
 	}
-
+	
+	my_bundle.subtubes.push_back(my_tube1);
+	my_bundle.subtubes.push_back(my_tube2);
+	my_bundle.subtubes.push_back(my_tube3);
+	my_bundle.subtubes.push_back(my_tube4);
+	my_bundle.subtubes.push_back(my_tube5);
+	my_bundle.subtubes.push_back(my_tube6);
+	my_bundle.subtubes.push_back(my_tube7);
 
 	#ifdef VISUAL
 		// generate the graphical representation of the object
@@ -964,7 +984,6 @@ void cnt_mesh::save_tubes(int number_of_unsaved_tubes) {
 
 	auto it = prev(tubes.end(), number_of_unsaved_tubes);
 
-	int n = 0;
 	while (!it->isSaved) {
 		save_one_tube(*it);
 		it->isSaved = true;

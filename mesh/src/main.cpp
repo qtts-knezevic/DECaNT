@@ -147,7 +147,7 @@ int main(int argc, char* argv[]) {
 			example->get_maxY();
 			
 			// only drop new tubes when no tubes near or above the drop height
-			if (example->read_maxY() < example->read_drop_height() - 1.0)
+			if (example->read_maxY() < example->read_drop_height() - (bundle ? 2.0 : 1.0))
 			{
 				// add this many cnt's at a time
 				for (int i=0; i<number_of_tubes_added_together; i++)
@@ -164,12 +164,15 @@ int main(int argc, char* argv[]) {
 			
 			example->save_tubes(number_of_unsaved_tubes);
 			
-			if(bundle)
-				example->freeze_bundles(number_of_active_bundles); // keep only this many of tubes active (for example 100) and freeze the rest of the tubes
+			if (bundle) {
+				example->freeze_bundles(number_of_active_bundles); // keep only this many bundles active (for example 100) and freeze the rest of the bundles
+			}
 			else
-				example->freeze_tubes(number_of_active_bundles);
+			{
+				example->freeze_tubes(number_of_active_bundles); // keep only this many tubes active (for example 100) and freeze the rest of the tubes
+			}
 				
-			example->remove_tubes(number_of_tubes_before_deletion); // keep only this many of tubes in the simulation (for example 400) and delete the rest of objects
+			example->remove_tubes(number_of_tubes_before_deletion); // keep only this many tubes in the simulation (for example 400) and delete the rest of objects
 			
 			std::cout << "number of saved tubes: " << example->no_of_saved_tubes() << ",  height [nm]:" << example->read_Ly() << "      \r" << std::flush;
 			
@@ -191,10 +194,13 @@ int main(int argc, char* argv[]) {
 			#endif
 			
 		}
+	// number of tubes that would be added if simulation were to end now: must be used in num saved tubes used for simulation end check
+	int final_added_tube_cnt = number_of_unsaved_tubes - number_of_active_bundles * (bundle ? 7 : 1);
+	
 	if(example->no_of_saved_tubes() > number_of_bundles)
 		break;
 
-	if ((example->read_Ly() > thickness) && (example->no_of_saved_tubes() > MIN_NUM_TUBES))
+	if ((example->read_Ly() > thickness) && ((example->no_of_saved_tubes() + final_added_tube_cnt) > MIN_NUM_TUBES))
 		break;
 	}
 
@@ -219,7 +225,7 @@ int main(int argc, char* argv[]) {
 	
 	// save all non-dynamic tubes to bring mesh up to measured height
 	if (bundle)
-		example->save_tubes(number_of_active_bundles * 6);
+		example->save_tubes(number_of_active_bundles * 7);
 	else
 		example->save_tubes(number_of_active_bundles);
 	std::cout << "number of saved tubes: " << example->no_of_saved_tubes() << ",  height [nm]:" << example->read_Ly() << "      \r" << std::flush;
