@@ -39,6 +39,7 @@ struct cnt_mesh : public CommonRigidBodyBase
 	// container properties
 	float _half_Lx,_half_Lz; // container size. y-axis is the direction in which the top of the container is open (vertical direction and the direction in which gravity is applied), Lx and Lz are the direction in which the container is enclosed
 	float Ly; // this is an average height for the stack of cnt mesh
+	float maxY; // this is the greatest height of any tube in the simulation
 
 	float drop_height=0;
 
@@ -71,8 +72,8 @@ struct cnt_mesh : public CommonRigidBodyBase
 	};
 	std::list<bundle> bundles;
 
-	btVector3 drop_coordinate(); // this method gives the appropriate coordinate for releasing the next tube
-	btVector3 drop_para_coordinate();
+	btVector3 drop_coordinate(float offset); // this method gives the appropriate coordinate for releasing the next tube
+	btVector3 drop_para_coordinate(float offset);
 
   public:
 	// constructor
@@ -88,7 +89,6 @@ struct cnt_mesh : public CommonRigidBodyBase
 	}
 
 	// set the simulation properties according to _json_prop object which is constructed from input.json
-	// TODO add chirality input and calculate tube diameter based on that
 	void parse_json_prop(){
 		
 		std::string output_path = _json_prop["output directory"];
@@ -169,13 +169,13 @@ struct cnt_mesh : public CommonRigidBodyBase
 	void save_json_properties(nlohmann::json j);
 
 	// this method adds a tube to the system.
-	void add_tube();
+	// void add_tube();
 
 	// this method adds a bundle in the xz plane
-	void add_bundle_in_xz(bool parallel);
+	void add_bundle_in_xz(bool parallel, float offset);
 
 	// this method adds parallel tube like blinds in the xz plane
-	void add_single_tube_in_xz(bool parallel);
+	void add_single_tube_in_xz(bool parallel, float offset);
 
 	// this method creates an open top container for the cnts
 	void create_ground_plane();
@@ -189,22 +189,37 @@ struct cnt_mesh : public CommonRigidBodyBase
 
 	// make tubes static in the simulation and only leave _number_of_active_tubes as dynamic in the simulation.
 	void freeze_tubes(unsigned number_of_active_tubes);
+	
+	// make bundles static in the simulation and only leave _number_of_active_tubes as dynamic in the simulation.
+	void freeze_bundles(unsigned number_of_active_tubes);
 
 	// remove the tubes from the simulation and only leave _max_number_of_tubes in the simulation
 	void remove_tubes(unsigned max_number_of_tubes);
-	// make bundles static in the simulation and only leave _number_of_active_tubes as dynamic in the simulation.
-	void freeze_bundles(unsigned number_of_active_tubes);
+	
 
 	// save the coordinates of the tube to an output file.
 	void save_one_tube(tube &t);
 
 	// update Ly, which is roughly the height of the filled container
 	void get_Ly();
+	
+	// update maximum (magnitude) y position of any dynamic tube
+	void get_maxY();
 
 	// read Ly, which is roughly the height of the filled container
 	inline const float& read_Ly() {
 		return Ly;
 	};
+	
+	// read maximum (magnitude) y position of any dynamic tube
+	float read_maxY() {
+		return maxY;
+	}
+	
+	// return the drop height used by the simulation
+	float read_drop_height() {
+		return drop_height;
+	}
 	
 	// get number of saved tubes
 	inline const int& no_of_saved_tubes() {

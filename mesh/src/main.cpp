@@ -144,15 +144,22 @@ int main(int argc, char* argv[]) {
 		if (step_number % number_of_steps == 0) // add new tubes every couple of steps.
 		{	
 			example->get_Ly();
-
-			// add this many cnt's at a time
-			for (int i=0; i<number_of_tubes_added_together; i++)
+			example->get_maxY();
+			
+			// only drop new tubes when no tubes near or above the drop height
+			if (example->read_maxY() < example->read_drop_height() - 1.0)
 			{
-				if(bundle)
-					example->add_bundle_in_xz(parallel);
-				else 
-					example->add_single_tube_in_xz(parallel);
-				
+				// add this many cnt's at a time
+				for (int i=0; i<number_of_tubes_added_together; i++)
+				{
+					// each successive tube generated higher such that non-parallel bundles don't generate intersecting
+					// (the fibers will interleave and keep them intersecting). single tubes also offset, just in case...
+					if(bundle)
+						example->add_bundle_in_xz(parallel, float(i) * 2.0);
+					else 
+						example->add_single_tube_in_xz(parallel, float(i));
+					
+				}
 			}
 			
 			example->save_tubes(number_of_unsaved_tubes);

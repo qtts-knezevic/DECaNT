@@ -36,6 +36,7 @@ void cnt_mesh::initPhysics() {
 void cnt_mesh::create_ground_plane() {
 
 	Ly = 0.;
+	maxY = 0.;
 
 	// create a few basic rigid bodies
 	//**********************************************************************************************
@@ -151,6 +152,7 @@ void cnt_mesh::freeze_bundles(unsigned number_of_active_bundles) {
 		return;
 
 	auto it = std::prev(bundles.end(), number_of_active_bundles + 1);
+	
 	while (it->isDynamic) {
 		auto my_tube = std::prev(it->subtubes.end());
 		while (my_tube->isDynamic) {
@@ -174,26 +176,28 @@ void cnt_mesh::freeze_bundles(unsigned number_of_active_bundles) {
 			else
 				--my_tube;
 		}
+		it->isDynamic = false;
 		if (it == bundles.begin())
 			break;
 		else
 			--it;
 	}
+	
 	bundle reduce = bundles.front();
 	while(!reduce.isDynamic) {
 		bundles.pop_front();
 		reduce = bundles.front();
 	}
+	
 	return;
 }
 
 
 // remove the tubes from the simulation and only leave max_number_of_tubes in the simulation
+// no need to worry about constraints, already removed when tubes were frozen
 void cnt_mesh::remove_tubes(unsigned max_number_of_tubes) {
 	if (tubes.size() <= max_number_of_tubes)
 		return;
-
-	int n = tubes.size() - max_number_of_tubes;
 
 	while (tubes.size() > max_number_of_tubes) {
 		tube& my_tube = tubes.front();
@@ -209,17 +213,17 @@ void cnt_mesh::remove_tubes(unsigned max_number_of_tubes) {
 }
 
 // this method gives the appropriate coordinate for releasing the next tube
-btVector3 cnt_mesh::drop_coordinate() {
+btVector3 cnt_mesh::drop_coordinate(float offset) {
 	return btVector3(_half_Lx *((2.0 * float(std::rand()) / float(RAND_MAX)) - 1.0),
-		drop_height, //drop_height + Ly,
+		drop_height + offset,
 		_half_Lz * ((2.0 * float(std::rand()) / float(RAND_MAX)) - 1.0)
 	);
 }
 
 // this method gives the appropriate coordinate for releasing the next tube
-btVector3 cnt_mesh::drop_para_coordinate() {
+btVector3 cnt_mesh::drop_para_coordinate(float offset) {
 	return btVector3(_half_Lx,
-					 drop_height, //drop_height + Ly,
+					 drop_height + offset,
 					 _half_Lz * ((2.0 * float(std::rand()) / float(RAND_MAX)) - 1.0)
 	);
 }
@@ -297,35 +301,82 @@ void cnt_mesh::save_one_tube(tube& t) {
 	chirality_file << std::endl;
 }
 
-void cnt_mesh::get_Ly() { //TODO the top is set to be the top of settled pile
-	// Ly should be about the height of the saved tubes such that generated mesh is correct height
+void cnt_mesh::get_Ly() {
+	// Ly should be about at the height of the tubes that will be saved if the simulation were to exit.
+	// By testing both parallel and random alignment, the best reference for Ly is between the
+	// average y for all dynamic tubes and average y for the very highest non-dynamic tubes.
 	
 	btTransform trans;
-	float maxNonDynamic = 0.0;
-	float minDynamic = INFINITY;
+	float dynamicY = 0.;
+	int dynamicCnt = 0;
+	
+	float nonDynamicY = 0.;
+	int nonDynamicCnt = 0;
+	float maxsNonDynamic[10] = {-INFINITY, -INFINITY, -INFINITY, -INFINITY, -INFINITY,
+				    -INFINITY, -INFINITY, -INFINITY, -INFINITY, -INFINITY};
+	float temp;
+	
 	
 	for (const auto& t : tubes) {
 		if (t.isDynamic) {
 			for (const auto& b : t.bodies) {
 				b->getMotionState()->getWorldTransform(trans);
-				minDynamic = trans.getOrigin().getY() < minDynamic ? trans.getOrigin().getY() : minDynamic;
+				dynamicY += trans.getOrigin().getY();
+				dynamicCnt++;
 			}
 		}
 		else {
 			for (const auto& b : t.bodies) {
 				b->getMotionState()->getWorldTransform(trans);
-				maxNonDynamic = trans.getOrigin().getY() > maxNonDynamic ? trans.getOrigin().getY() : maxNonDynamic;
+				// if this y coord is highest than lowest in max list, add it
+				if (trans.getOrigin().getY() > maxsNonDynamic[0])
+					maxsNonDynamic[0] =  trans.getOrigin().getY();
+				
+				// percolate new element up (highest at highest index)
+				for (int i = 1; i < 10; i++) {
+					if (maxsNonDynamic[i-1] > maxsNonDynamic[i]) {
+						temp = maxsNonDynamic[i-1];
+						maxsNonDynamic[i-1] = maxsNonDynamic[i];
+						maxsNonDynamic[i] = temp;
+					}
+						
+				}
 			}
 		}
 	}
-	
-	if (minDynamic == INFINITY) {
-		Ly = 0;
-	}
-	else {
-		Ly = (maxNonDynamic + minDynamic) / 2.0;
-	}
 
+	if (dynamicCnt > 0) {
+		dynamicY = dynamicY / float(dynamicCnt);
+	}
+	
+	for (int i = 0; i < 10; i++) {
+		nonDynamicY += (maxsNonDynamic[i] > -INFINITY) ? maxsNonDynamic[i] : 0.;
+		nonDynamicCnt += (maxsNonDynamic[i] > -INFINITY) ? 1 : 0;
+	}
+	
+	if (nonDynamicCnt > 0) {
+		nonDynamicY = nonDynamicY / float(nonDynamicCnt);
+	}
+	
+	
+	Ly = (nonDynamicY + dynamicY) / 2.0;
+}
+
+void cnt_mesh::get_maxY() {
+	float y = 0.;
+	maxY = 0.;
+	btTransform trans;
+	
+	for (const auto& t : tubes) {
+		if (t.isDynamic) {
+			for (const auto& b : t.bodies) {
+				b->getMotionState()->getWorldTransform(trans);
+				y = trans.getOrigin().getY();
+				maxY = (y > maxY) ? y : maxY;
+			}
+		}
+				
+	}
 }
 
 // set and save the json properties that is read and parsed from the input_json file.
@@ -453,7 +504,7 @@ void cnt_mesh::add_tube() {
 
 
 // this method adds bundle in the xz plane
-void cnt_mesh::add_bundle_in_xz(bool parallel) {
+void cnt_mesh::add_bundle_in_xz(bool parallel, float offset) {
 	const float pi  = 3.14159265358979323846;
 	const float rt3 = 1.73205080756887729353;
 
@@ -523,15 +574,15 @@ void cnt_mesh::add_bundle_in_xz(bool parallel) {
 	// set drop orientation of the tube
 	float angle = parallel ? 0 : (float(std::rand() % 1000) / 1000. * pi);
 	float x_comp = std::cos(angle);
-	float y_comp = std::sin(angle);
-	btVector3 ax(x_comp, 0, y_comp); // axis vector for the tube sections
+	float z_comp = std::sin(angle);
+	btVector3 ax(x_comp, 0, z_comp); // axis vector for the tube sections
 	
 	// set a quaternion to determine the orientation of tube sections, note that the initial orientation of the tube sections are along the y-axis
 	btQuaternion qt;
 	btVector3 q_axis = ax.rotate(btVector3(0, 1, 0), pi / 2); // axis vector for the quaternion describing orientation of tube sections
 	qt.setRotation(q_axis, pi / 2);
 
-	btVector3 drop_coor = parallel ? drop_para_coordinate() : drop_coordinate();
+	btVector3 drop_coor = parallel ? drop_para_coordinate(offset) : drop_coordinate(offset);
 	// btVector3 drop_coor(0,Ly,0);
 
 	// set the density of the material making the tubes
@@ -560,23 +611,13 @@ void cnt_mesh::add_bundle_in_xz(bool parallel) {
 		startTransform.setOrigin(origin);
 		startTransform.setRotation(qt);
 		
-		x_comp *= diameter;
-		y_comp *= diameter;
-		
 		// create rigid bodies
-		// EXPERIMENTAL: give each a position offset from the center
 		my_tube1.bodies.push_back(createRigidBody(mass, startTransform, colShape));	// no static object
-		startTransform.setOrigin(origin + *(new btVector3(-x_comp, 0, -y_comp)));
 		my_tube2.bodies.push_back(createRigidBody(mass, startTransform, colShape));	// no static object
-		startTransform.setOrigin(origin + *(new btVector3(x_comp * -0.5, diameter * rt3/2, y_comp * -0.5)));
 		my_tube3.bodies.push_back(createRigidBody(mass, startTransform, colShape));	// no static object
-		startTransform.setOrigin(origin + *(new btVector3(x_comp * 0.5, diameter * rt3/2, y_comp * 0.5)));
 		my_tube4.bodies.push_back(createRigidBody(mass, startTransform, colShape));	// no static object
-		startTransform.setOrigin(origin + *(new btVector3(x_comp, 0, y_comp)));
 		my_tube5.bodies.push_back(createRigidBody(mass, startTransform, colShape));	// no static object
-		startTransform.setOrigin(origin + *(new btVector3(x_comp * 0.5, diameter * -rt3/2, y_comp * diameter * 0.5)));
 		my_tube6.bodies.push_back(createRigidBody(mass, startTransform, colShape));	// no static object
-		startTransform.setOrigin(origin + *(new btVector3(x_comp * -0.5, diameter * -rt3/2, y_comp * -0.5)));
 		my_tube7.bodies.push_back(createRigidBody(mass, startTransform, colShape));	// no static object
 		
 		// my_tube.bodies.back()->setMassProps(mass,btVector3(1,0,1)); // turn off rotation along the y-axis of the cylinder shapes
@@ -594,6 +635,9 @@ void cnt_mesh::add_bundle_in_xz(bool parallel) {
 	my_tube1.length = c_length;
 	my_tube2.length = c_length;
 	my_tube3.length = c_length;
+	my_tube4.length = c_length; // added next 3
+	my_tube5.length = c_length;
+	my_tube6.length = c_length;
 
 	//add N-1 constraints between the rigid bodies
 	for (int i = 0; i < my_tube1.bodies.size() - 1; ++i) {
@@ -803,7 +847,7 @@ void cnt_mesh::add_bundle_in_xz(bool parallel) {
 
 
 // this method adds parallel tube like blinds in the xz plane
-void cnt_mesh::add_single_tube_in_xz(bool parallel) {
+void cnt_mesh::add_single_tube_in_xz(bool parallel, float offset) {
 	const float pi = 3.14159265358979323846;
 
 	tubes.push_back(tube());
@@ -832,7 +876,7 @@ void cnt_mesh::add_single_tube_in_xz(bool parallel) {
 	btVector3 q_axis = ax.rotate(btVector3(0, 1, 0), pi / 2); // axis vector for the quaternion describing orientation of tube sections
 	qt.setRotation(q_axis, pi / 2);
 
-	btVector3 drop_coor = parallel ? drop_para_coordinate() : drop_coordinate();
+	btVector3 drop_coor = parallel ? drop_para_coordinate(offset) : drop_coordinate(offset);
 	// btVector3 drop_coor(0,Ly,0);
 
 	// set the density of the material making the tubes
@@ -913,7 +957,7 @@ void cnt_mesh::add_single_tube_in_xz(bool parallel) {
 
 }
 
-// make tubes static in the simulation and only leave number_of_active_tubes as dynamic in the simulation.
+// save all tubes in the simulation expect the number_of_unsaved_tubes latest.
 void cnt_mesh::save_tubes(int number_of_unsaved_tubes) {
 	if (tubes.size() <= number_of_unsaved_tubes)
 		return;
