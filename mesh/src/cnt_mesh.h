@@ -67,7 +67,7 @@ struct cnt_mesh : public CommonRigidBodyBase
 	std::list<tube> tubes;
 
 	struct bundle {
-		std::list<tube> subtubes;
+		std::list<tube*> subtubes;
 		bool isDynamic = true;
 		std::vector<btTypedConstraint*> constraints; // movement constraints that connect all tubes' bodies
 	};

@@ -141,7 +141,7 @@ int main(int argc, char* argv[]) {
 		example->stepSimulation(dtSec);
 		//example->printtube(2);
 
-		if (step_number % number_of_steps == 0) // add new tubes every couple of steps.
+		if (step_number % number_of_steps == 0) // run logic to add/freeze/etc tubes and draw only on certain ticks (for speed)
 		{	
 			example->get_Ly();
 			example->get_maxY();
@@ -194,14 +194,14 @@ int main(int argc, char* argv[]) {
 			#endif
 			
 		}
-	// number of tubes that would be added if simulation were to end now: must be used in num saved tubes used for simulation end check
-	int final_added_tube_cnt = number_of_unsaved_tubes - number_of_active_bundles * (bundle ? 7 : 1);
-	
-	if(example->no_of_saved_tubes() > number_of_bundles)
-		break;
+		// number of tubes that would be added if simulation were to end now: must be used in num saved tubes used for simulation end check
+		int final_added_tube_cnt = number_of_unsaved_tubes - number_of_active_bundles * (bundle ? 7 : 1);
+		
+		if((example->no_of_saved_tubes() + final_added_tube_cnt) > number_of_bundles)
+			break;
 
-	if ((example->read_Ly() > thickness) && ((example->no_of_saved_tubes() + final_added_tube_cnt) > MIN_NUM_TUBES))
-		break;
+		if ((example->read_Ly() > thickness) && ((example->no_of_saved_tubes() + final_added_tube_cnt) > MIN_NUM_TUBES))
+			break;
 	}
 
 	#ifdef VISUAL

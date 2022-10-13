@@ -16,7 +16,6 @@
 #include "../helper/progress.hpp"
 #include "monte_carlo.h"
 
-extern float epsr;
 
 namespace mc
 {

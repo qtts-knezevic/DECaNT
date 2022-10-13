@@ -10,6 +10,8 @@
 #include "cnt.h"
 #include "../helper/prepare_directory.hpp"
 
+extern float epsr;
+
 class exciton_transfer
 {
 private:

@@ -153,17 +153,16 @@ void cnt_mesh::freeze_bundles(unsigned number_of_active_bundles) {
 
 	auto it = std::prev(bundles.end(), number_of_active_bundles + 1);
 	
-	while (1) {
+	while (it->isDynamic) {
 		auto my_tube = std::prev(it->subtubes.end());
-		while (my_tube->isDynamic) {
+		while ((*my_tube)->isDynamic) {
 			// make the sections static by putting their mass equal to zero
-			for (auto& b : my_tube->bodies) {
+			for (auto& b : (*my_tube)->bodies) {
 				b->setMassProps(0, btVector3(0, 0, 0));
-				// TODO why does this never iterate?
 			}
 
-			my_tube->constraints.clear();
-			my_tube->isDynamic = false;
+			(*my_tube)->constraints.clear();
+			(*my_tube)->isDynamic = false;
 
 			if (my_tube == it->subtubes.begin())
 				break;
@@ -178,6 +177,7 @@ void cnt_mesh::freeze_bundles(unsigned number_of_active_bundles) {
 			c = nullptr;
 		}
 		it->constraints.clear();
+		it->isDynamic = false;
 			
 		if (it == bundles.begin())
 			break;
@@ -518,6 +518,14 @@ void cnt_mesh::add_bundle_in_xz(bool parallel, float offset) {
 
 	bundles.push_back(bundle());
 	bundle& my_bundle = bundles.back();
+	
+	my_bundle.subtubes.push_back(&my_tube1);
+	my_bundle.subtubes.push_back(&my_tube2);
+	my_bundle.subtubes.push_back(&my_tube3);
+	my_bundle.subtubes.push_back(&my_tube4);
+	my_bundle.subtubes.push_back(&my_tube5);
+	my_bundle.subtubes.push_back(&my_tube6);
+	my_bundle.subtubes.push_back(&my_tube7);
 
 	int d = std::rand() % 100; // index related to the diameter of the tube
 	int c_index = 0;
@@ -849,14 +857,6 @@ void cnt_mesh::add_bundle_in_xz(bool parallel, float offset) {
 		my_bundle.constraints.push_back(circleSpring67b);
 		my_bundle.constraints.push_back(circleSpring72b);
 	}
-	
-	my_bundle.subtubes.push_back(my_tube1);
-	my_bundle.subtubes.push_back(my_tube2);
-	my_bundle.subtubes.push_back(my_tube3);
-	my_bundle.subtubes.push_back(my_tube4);
-	my_bundle.subtubes.push_back(my_tube5);
-	my_bundle.subtubes.push_back(my_tube6);
-	my_bundle.subtubes.push_back(my_tube7);
 
 	#ifdef VISUAL
 		// generate the graphical representation of the object

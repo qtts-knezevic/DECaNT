@@ -9,7 +9,7 @@
 #include "constants.h"
 #include "../helper/progress.hpp"
 
-float epsr; // relative permittivity. global or else it has to pass through a confusing subset of function calls EXPERIMENTAL
+float epsr = 1; // relative permittivity. global or else it has to pass through a confusing subset of function calls EXPERIMENTAL
 
 // calculate and plot Q matrix element between two exciton bands
 void exciton_transfer::save_Q_matrix_element(const int i_n_principal, const int f_n_principal)
