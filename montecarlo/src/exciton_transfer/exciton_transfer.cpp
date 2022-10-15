@@ -9,7 +9,7 @@
 #include "constants.h"
 #include "../helper/progress.hpp"
 
-float epsr = 1; // relative permittivity. global or else it has to pass through a confusing subset of function calls EXPERIMENTAL
+float epsr = 1; // relative permittivity, reset when input.json read.
 
 // calculate and plot Q matrix element between two exciton bands
 void exciton_transfer::save_Q_matrix_element(const int i_n_principal, const int f_n_principal)
@@ -26,7 +26,7 @@ void exciton_transfer::save_Q_matrix_element(const int i_n_principal, const int 
 
   // some error checking
   if ((i_n_principal >= i_exciton.n_principal) and (f_n_principal >= f_exciton.n_principal)){
-    throw std::invalid_argument("i_n_principal or f_n_principla are two large.");
+    throw std::invalid_argument("i_n_principal or f_n_principal are too large.");
   }
 
   // find lists of relevant states in donor and acceptor excitons

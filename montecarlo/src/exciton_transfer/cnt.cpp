@@ -531,27 +531,27 @@ cnt::vq_struct cnt::calculate_vq(const std::array<int,2> iq_range, const std::ar
   if (no_of_cnt_unit_cells % 2 == 0)  no_of_cnt_unit_cells ++;
 
   // calculate distances between atoms in a warped cnt unit cell.
-	arma::mat pos_aa = arma::mat(_Nu,2,arma::fill::zeros);
-	arma::mat pos_ab = arma::mat(_Nu,2,arma::fill::zeros);
-	arma::mat pos_ba = arma::mat(_Nu,2,arma::fill::zeros);
+  arma::mat pos_aa = arma::mat(_Nu,2,arma::fill::zeros);
+  arma::mat pos_ab = arma::mat(_Nu,2,arma::fill::zeros);
+  arma::mat pos_ba = arma::mat(_Nu,2,arma::fill::zeros);
   arma::mat pos_bb = arma::mat(_Nu,2,arma::fill::zeros);
+  
+  for (int i=0; i<_Nu; i++)
+  {
+  	pos_aa.row(i) = _pos_a.row(i)-_pos_a.row(0);
+	pos_ab.row(i) = _pos_a.row(i)-_pos_b.row(0);
+	pos_ba.row(i) = _pos_b.row(i)-_pos_a.row(0);
+	pos_bb.row(i) = _pos_b.row(i)-_pos_b.row(0);
 
-	for (int i=0; i<_Nu; i++)
-	{
-    pos_aa.row(i) = _pos_a.row(i)-_pos_a.row(0);
-    pos_ab.row(i) = _pos_a.row(i)-_pos_b.row(0);
-    pos_ba.row(i) = _pos_b.row(i)-_pos_a.row(0);
-    pos_bb.row(i) = _pos_b.row(i)-_pos_b.row(0);
-
-		if(pos_aa(i,0) > _ch_vec(0)/2)
-      pos_aa(i,0) -= _ch_vec(0);
-		if(pos_ab(i,0) > _ch_vec(0)/2)
-      pos_ab(i,0) -= _ch_vec(0);
-		if(pos_ba(i,0) > _ch_vec(0)/2)
-      pos_ba(i,0) -= _ch_vec(0);
-		if(pos_bb(i,0) > _ch_vec(0)/2)
-      pos_bb(i,0) -= _ch_vec(0);
-	}
+	if(pos_aa(i,0) > _ch_vec(0)/2)
+		pos_aa(i,0) -= _ch_vec(0);
+	if(pos_ab(i,0) > _ch_vec(0)/2)
+		pos_ab(i,0) -= _ch_vec(0);
+	if(pos_ba(i,0) > _ch_vec(0)/2)
+  		pos_ba(i,0) -= _ch_vec(0);
+	if(pos_bb(i,0) > _ch_vec(0)/2)
+  		pos_bb(i,0) -= _ch_vec(0);
+  }
 
   arma::cube rel_pos(_Nu*no_of_cnt_unit_cells,2,4,arma::fill::zeros);
   for (int i=-std::floor(double(no_of_cnt_unit_cells)/2.); i<=std::floor(double(no_of_cnt_unit_cells)/2.); i++)

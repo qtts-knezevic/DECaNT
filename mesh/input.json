@@ -1,5 +1,5 @@
 {
-    "output directory":"./cnt_mesh_fiber_test",
+    "output directory":"../mesh/cnt_mesh_fiber_test",
     "keep old files":false,
 
     "visualize":false,
@@ -12,7 +12,7 @@
     "cnt chirality": [4,2],
     "chirality probability [percentage]":[100],
     "cnt intertube spacing [nm]":0.2,
-    "cnt expected film thickness [nm]": 19,
+    "cnt expected film thickness [nm]":19,
     "cnt total length [nm]": [100,100],
     "cnt section length [nm]": [7,12],
 

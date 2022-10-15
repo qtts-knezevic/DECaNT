@@ -16,8 +16,6 @@
 
 #include "cnt_mesh.h"
 
-# define MIN_NUM_TUBES 1000
-
 // this block of code and the global variable and function is used for handling mouse input and
 // moving objects via mouse. you can comment it if this capability is not needed any more.
 //*************************************************************************************************
@@ -197,10 +195,7 @@ int main(int argc, char* argv[]) {
 		// number of tubes that would be added if simulation were to end now: must be used in num saved tubes used for simulation end check
 		int final_added_tube_cnt = number_of_unsaved_tubes - number_of_active_bundles * (bundle ? 7 : 1);
 		
-		if((example->no_of_saved_tubes() + final_added_tube_cnt) > number_of_bundles)
-			break;
-
-		if ((example->read_Ly() > thickness) && ((example->no_of_saved_tubes() + final_added_tube_cnt) > MIN_NUM_TUBES))
+		if(((example->no_of_saved_tubes() + final_added_tube_cnt) > number_of_bundles) || example->read_Ly() > thickness))
 			break;
 	}
 
