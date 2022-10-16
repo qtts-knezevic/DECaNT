@@ -9,7 +9,7 @@
     "drop height [nm]": 25,
 
     "number of chirality": 1,
-    "cnt chirality": [6,2],
+    "cnt chirality": [4,2],
     "chirality probability [percentage]":[100],
     "cnt intertube spacing [nm]":0.2,
     "cnt expected film thickness [nm]": 19,

@@ -48,6 +48,7 @@ struct cnt_mesh : public CommonRigidBodyBase
 	std::vector<float> _tube_length;
 	std::vector<std::vector<int>> _tube_chirality;
 	std::vector<int> _chirality_prob;
+	float _max_tube_diameter;
 	
 	std::vector<std::vector<btCollisionShape*>> _tube_section_collision_shapes; // first index determines the diameter, the second index determines the length of the section
 
@@ -108,6 +109,7 @@ struct cnt_mesh : public CommonRigidBodyBase
 			chir.push_back(_json_prop["cnt chirality"][2*i+1]);
 			_tube_chirality.push_back(chir);
 			_tube_diameter.push_back(calc_diam(chir[0],chir[1]));
+			_max_tube_diameter = *std::max_element(_tube_diameter.begin(), _tube_diameter.end());
 			int next_prob = _json_prop["chirality probability [percentage]"][i];
 			probability += next_prob;
 			_chirality_prob.push_back(probability);
@@ -160,7 +162,7 @@ struct cnt_mesh : public CommonRigidBodyBase
 		double _a_cc = 1.42e-1; // carbon-carbon distance [meters]
  		double _a_l = std::sqrt(float(3.0))*_a_cc; // graphene lattice constants [meters]
 		double _circum = _a_l*std::sqrt(float(_n*_n+_m*_m+_n*_m));
-		double pi=3.141592;
+		double pi= 3.141592;
   		// cnt radius
  		return (_circum/pi);
 

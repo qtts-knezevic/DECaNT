@@ -595,7 +595,8 @@ void cnt_mesh::add_bundle_in_xz(bool parallel, float offset) {
 	btQuaternion qt;
 	btVector3 q_axis = ax.rotate(btVector3(0, 1, 0), pi / 2); // axis vector for the quaternion describing orientation of tube sections
 	qt.setRotation(q_axis, pi / 2);
-
+	
+	offset = offset * _max_tube_diameter * 2.0;	
 	btVector3 drop_coor = parallel ? drop_para_coordinate(offset) : drop_coordinate(offset);
 	// btVector3 drop_coor(0,Ly,0);
 
@@ -922,6 +923,7 @@ void cnt_mesh::add_single_tube_in_xz(bool parallel, float offset) {
 	btVector3 q_axis = ax.rotate(btVector3(0, 1, 0), pi / 2); // axis vector for the quaternion describing orientation of tube sections
 	qt.setRotation(q_axis, pi / 2);
 
+	offset = offset * _max_tube_diameter;
 	btVector3 drop_coor = parallel ? drop_para_coordinate(offset) : drop_coordinate(offset);
 	// btVector3 drop_coor(0,Ly,0);
 

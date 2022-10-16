@@ -4,7 +4,7 @@
         "directory": "./exciton_energy/",
         "1": {
             "keep old results": false,
-            "chirality": [6,2],
+            "chirality": [4,2],
             "length": [10,"cnt unit cells"]
         }
     },
