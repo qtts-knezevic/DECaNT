@@ -17,7 +17,7 @@ from tube import fiber
 import util
 
 #IMPORTANT: do not move this line (it is overwritten by the mesh main program).
-DIR = '../cnt_mesh_fiber_test'
+DIR = '../../mesh/cnt_mesh_fiber_test'
 
 # # customize matplotlib styles
 # mpl.rc('lines', linewidth=4)  # default linewidth
@@ -335,6 +335,11 @@ def main():
       )
       data.append(trace)
 
+    # used in plot aspect ratio calculation
+    max_y = (np.take(cnt_pos, [1], 2)[np.argmax(np.take(cnt_pos, [1], 2), 0)[0][0]][0][0])
+    max_x = (np.take(cnt_pos, [0], 2)[np.argmax(np.take(cnt_pos, [0], 2), 0)[0][0]][0][0])
+    max_z = (np.take(cnt_pos, [2], 2)[np.argmax(np.take(cnt_pos, [2], 2), 0)[0][0]][0][0])
+
     layout = {
         'autosize':True,
         'title':'Iris dataset',
@@ -357,7 +362,7 @@ def main():
             'showbackground':True,
             'backgroundcolor':'rgb(230, 230,230)'
           },
-          'aspectratio':{'x':1, 'y':1, 'z':0.02}
+          'aspectratio':{'x':1, 'y':1, 'z': max_y/((max(max_x, max_z)) * 2)}
         },
     }
 
@@ -384,7 +389,7 @@ def main():
     cnt_pos = np.array(cnt_pos)
     cnt_orient = np.array(cnt_orient)
     cnt_chiral = np.array(cnt_chiral)
-
+    
     coor_per_cnt = cnt_pos.shape[2]
     cnt_pos = cnt_pos.reshape((-1, coor_per_cnt, 3))
     cnt_orient = cnt_orient.reshape((-1, coor_per_cnt, 3))

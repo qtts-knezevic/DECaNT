@@ -202,7 +202,7 @@ struct cnt_mesh : public CommonRigidBodyBase
 	void save_one_tube(tube &t);
 
 	// update Ly, which is roughly the height of the filled container
-	void get_Ly();
+	void get_Ly(bool parallel);
 	
 	// update maximum (magnitude) y position of any dynamic tube
 	void get_maxY();

@@ -120,10 +120,8 @@ int main(int argc, char* argv[]) {
 	if(parallel)
 		example->create_z_plane();
 	example->create_tube_colShapes(spacing);
-
-
-	// example->get_Ly();
-	// example->add_tube_in_xz();
+	
+	
 	#ifdef VISUAL
 	if (visualize) {
 		example->resetCamera();
@@ -139,9 +137,10 @@ int main(int argc, char* argv[]) {
 		example->stepSimulation(dtSec);
 		//example->printtube(2);
 
-		if (step_number % number_of_steps == 0) // run logic to add/freeze/etc tubes and draw only on certain ticks (for speed)
+		// run logic to add/freeze/etc tubes and draw only on certain ticks (for speed)
+		if (step_number % number_of_steps == 0)
 		{	
-			example->get_Ly();
+			example->get_Ly(parallel);
 			example->get_maxY();
 			
 			// only drop new tubes when no tubes near or above the drop height
@@ -195,7 +194,7 @@ int main(int argc, char* argv[]) {
 		// number of tubes that would be added if simulation were to end now: must be used in num saved tubes used for simulation end check
 		int final_added_tube_cnt = number_of_unsaved_tubes - number_of_active_bundles * (bundle ? 7 : 1);
 		
-		if(((example->no_of_saved_tubes() + final_added_tube_cnt) > number_of_bundles) || example->read_Ly() > thickness))
+		if((example->no_of_saved_tubes() + final_added_tube_cnt) > number_of_bundles || example->read_Ly() > thickness)
 			break;
 	}
 
@@ -240,7 +239,16 @@ int main(int argc, char* argv[]) {
 	
 	interpolationScriptOut << "DIR = '";
 	if (example->output_path().is_relative())
-		interpolationScriptOut << "."; // path must be relative to python_scripts, which is one directory down from current (mesh)
+	{
+		// path must be relative to python_scripts, which is one directory down from current (mesh)
+		if (example->output_path().string()[0] == '.' && example->output_path().string()[1] == '.') {
+		  interpolationScriptOut << ".." << std::experimental::filesystem::path::preferred_separator;
+		}
+		else
+		{
+		  interpolationScriptOut << ".";
+		}
+	}
 	interpolationScriptOut << example->output_path().string() << "'";
 	std::getline(interpolationScriptIn, currentLine);
 	

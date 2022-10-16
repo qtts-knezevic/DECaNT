@@ -303,51 +303,77 @@ void cnt_mesh::save_one_tube(tube& t) {
 	chirality_file << std::endl;
 }
 
-void cnt_mesh::get_Ly() {
-	// Ly should be about at the height of the tubes that will be saved if the simulation were to exit.
-	// This is found by the average of the highest few non-dynamic tubes.
+void cnt_mesh::get_Ly(bool parallel) {
+	// Determining a roughly accurate Ly is different for parallel and random meshes.
+	// For parallel, the average height of the active tubes is a good choice because
+	// it will be very near the average top of the non-dynamic (will be saved) tubes.
+	// Looking at only the highest non-dynamic tubes will tend to select a non-typically
+	// high part of the mesh.
+	// For random, the average height of active tubes will be far too low as many will be
+	// draped over the side of the pile. As the few highest non-dynamic tubes will be near
+	// the top of the pile, they will provide a good estimate of the pile's height in this case
 	
 	btTransform trans;
 	
-	float nonDynamicY = 0.;
-	int nonDynamicCnt = 0;
-	float maxsNonDynamic[10] = {-INFINITY, -INFINITY, -INFINITY, -INFINITY, -INFINITY,
-				    -INFINITY, -INFINITY, -INFINITY, -INFINITY, -INFINITY};
-	float temp;
-	
-	
-	for (const auto& t : tubes) {
-		if (!t.isDynamic) {
-			for (const auto& b : t.bodies) {
-				b->getMotionState()->getWorldTransform(trans);
-				// if this y coord is highest than lowest in max list, add it
-				if (trans.getOrigin().getY() > maxsNonDynamic[0])
-					maxsNonDynamic[0] =  trans.getOrigin().getY();
-				
-				// percolate new element up (highest at highest index)
-				for (int i = 1; i < 10; i++) {
-					if (maxsNonDynamic[i-1] > maxsNonDynamic[i]) {
-						temp = maxsNonDynamic[i-1];
-						maxsNonDynamic[i-1] = maxsNonDynamic[i];
-						maxsNonDynamic[i] = temp;
+	if (parallel) {
+		float dynamicYSum = 0;
+		int   dynamicCnt  = 0;
+		
+		for (const auto& t : tubes) {
+			if (t.isDynamic) {
+				for (const auto& b : t.bodies) {
+					// exclude falling tubes so that average isn't way too high...
+					if (std::abs((b->getLinearVelocity()[1])) < 1) {
+						b->getMotionState()->getWorldTransform(trans);
+						dynamicYSum += trans.getOrigin().getY();
+						dynamicCnt  += 1;
 					}
-						
 				}
 			}
 		}
+		
+		Ly = (dynamicCnt == 0) ? 0.0 : (dynamicYSum / dynamicCnt);
+	} else {
+		float nonDynamicY = 0.;
+		int   nonDynamicCnt = 0;
+		float maxsNonDynamic[10] = {-INFINITY, -INFINITY, -INFINITY, -INFINITY, -INFINITY,
+					    -INFINITY, -INFINITY, -INFINITY, -INFINITY, -INFINITY};
+		float temp;
+		
+		
+		for (const auto& t : tubes) {
+			if (!t.isDynamic) {
+				for (const auto& b : t.bodies) {
+					b->getMotionState()->getWorldTransform(trans);
+					// if this y coord is highest than lowest in max list, add it
+					if (trans.getOrigin().getY() > maxsNonDynamic[0])
+						maxsNonDynamic[0] =  trans.getOrigin().getY();
+					
+					// percolate new element up (highest at highest index)
+					for (int i = 1; i < 10; i++) {
+						if (maxsNonDynamic[i-1] > maxsNonDynamic[i]) {
+							temp = maxsNonDynamic[i-1];
+							maxsNonDynamic[i-1] = maxsNonDynamic[i];
+							maxsNonDynamic[i] = temp;
+						}
+							
+					}
+				}
+			}
+		}
+		
+		for (int i = 0; i < 10; i++) {
+			nonDynamicY += (maxsNonDynamic[i] > -INFINITY) ? maxsNonDynamic[i] : 0.;
+			nonDynamicCnt += (maxsNonDynamic[i] > -INFINITY) ? 1 : 0;
+		}
+		
+		if (nonDynamicCnt > 0) {
+			nonDynamicY = nonDynamicY / float(nonDynamicCnt);
+		}
+		
+		
+		Ly = nonDynamicY;
 	}
-	
-	for (int i = 0; i < 10; i++) {
-		nonDynamicY += (maxsNonDynamic[i] > -INFINITY) ? maxsNonDynamic[i] : 0.;
-		nonDynamicCnt += (maxsNonDynamic[i] > -INFINITY) ? 1 : 0;
-	}
-	
-	if (nonDynamicCnt > 0) {
-		nonDynamicY = nonDynamicY / float(nonDynamicCnt);
-	}
-	
-	
-	Ly = nonDynamicY;
 }
 
 void cnt_mesh::get_maxY() {
