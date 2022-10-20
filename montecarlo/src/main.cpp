@@ -73,7 +73,7 @@ int main(int argc, char *argv[]) {
     sim.kubo_save_avg_displacement_squared();
     sim.kubo_save_individual_particle_displacements();
     sim.kubo_save_individual_particle_positions();
-    // sim.kubo_save_diffusion_tensor();
+    sim.kubo_save_diffusion_tensor();
 
     std::cout << "kubo simulation: current time [seconds]: " << std::scientific << sim.time() << " .... "
               << "max time [seconds]: " << sim.kubo_max_time() << "\r" << std::flush;
