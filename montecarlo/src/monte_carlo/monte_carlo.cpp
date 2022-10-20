@@ -26,7 +26,7 @@ namespace mc
 
     std::string rate_type = j["rate type"].get<std::string>();
     
-    epsr = j["relative permittivity"].get<float>(); // EXPERIMENTAL
+    epsr = j["relative permittivity"].get<float>();
 
     std::cout << "\ninitializing scattering table with " << rate_type << "..." << std::endl;
 
@@ -54,25 +54,24 @@ namespace mc
         std::cout << i <<"th tube's chirality: [" << chirality_map[i][0] << ", " << chirality_map[i][1] << "]" << std::endl;
       }
 
-	  monte_carlo::scatt_t all_tables(size(cnts));
-	  for (int i = 0; i < size(cnts); i++) {
-		  all_tables[i] = std::vector<scattering_struct>(size(cnts));
-		  for (int j = 0; j < size(cnts); j++) {
-        std::experimental::filesystem::path path_ref =_scatter_table_directory.path();
-        path_ref /= std::to_string(cnts[i].chirality()[0])+std::to_string(cnts[i].chirality()[1])+std::to_string(cnts[j].chirality()[0])
-        	+std::to_string(cnts[j].chirality()[1])+"_"+std::to_string(epsr)+"scat_table";
+      monte_carlo::scatt_t all_tables(size(cnts));
+      for (int i = 0; i < size(cnts); i++) {
+        all_tables[i] = std::vector<scattering_struct>(size(cnts));
+        for (int k = 0; k < size(cnts); k++) {
+          std::experimental::filesystem::path path_ref =_scatter_table_directory.path();
+          path_ref /= std::to_string(cnts[i].chirality()[0])+std::to_string(cnts[i].chirality()[1])+std::to_string(cnts[k].chirality()[0])
+        	+std::to_string(cnts[k].chirality()[1])+"_"+std::to_string(j["temperature [kelvin]"].get<float>())+"_"+std::to_string(epsr)+"scat_table";
 
-        if(check_scat_tab(path_ref))
-          all_tables[i][j] = recovery_scatt_table(path_ref,cnts[i], cnts[j]);
-        else {
-          std::cout<<"table not found!!"<<std::endl;
-			    all_tables[i][j] = create_davoody_scatt_table(cnts[i], cnts[j]);
+          if (check_scat_tab(path_ref))
+            all_tables[i][k] = recovery_scatt_table(j, path_ref,cnts[i], cnts[k]);
+          else {
+            std::cout<<"table not found!!"<<std::endl;
+            all_tables[i][k] = create_davoody_scatt_table(j, cnts[i], cnts[k]);
+          }
         }
-		  }
-	  }
-	  
-
-	  return all_tables;
+      }
+  
+      return all_tables;
     }
 
     /*if (rate_type == "forster") {
@@ -83,12 +82,12 @@ namespace mc
       return create_forster_scatt_table(1.e13, 1.4e9);
     }*/
     
-    throw std::invalid_argument("rate type must be one of the following: \"davoody\", \"forster\", \"wong\"");
+    throw std::invalid_argument("rate type must be one of the following: \"davoody\", \"forster\", \"wong\". (Only davoody is implemented.)");
 
   };
 
   // method reading from scatter table directory and construct scatter table.
-  scattering_struct monte_carlo::recovery_scatt_table(std::experimental::filesystem::path path, const cnt& d_cnt, const cnt& a_cnt) {
+  scattering_struct monte_carlo::recovery_scatt_table(nlohmann::json j, std::experimental::filesystem::path path, const cnt& d_cnt, const cnt& a_cnt) {
     path /= "scat_table";
 
     arma::vec z_shift;
@@ -117,11 +116,13 @@ namespace mc
       c.load(std::string(path) + std::to_string(i_th)+ ".rates.dat");
       i_th++;});
 
-    scattering_struct scat_table(rate,theta,z_shift,axis_shift_1,axis_shift_2, d_cnt.chirality(), a_cnt.chirality(), epsr);
+    scattering_struct scat_table(rate,theta,z_shift,axis_shift_1,axis_shift_2, d_cnt.chirality(), a_cnt.chirality(), epsr,
+    		j["temperature [kelvin]"].get<float>());
 
     std::experimental::filesystem::path path_out =_output_directory.path();
     path_out /= std::to_string(d_cnt.chirality()[0])+std::to_string(d_cnt.chirality()[1])+std::to_string(a_cnt.chirality()[0])
-    		+std::to_string(a_cnt.chirality()[1])+"_"+std::to_string(epsr)+"scat_table";
+    		+std::to_string(a_cnt.chirality()[1])+"_"+std::to_string(j["temperature [kelvin]"].get<float>())
+    		+"_"+std::to_string(epsr)+"scat_table";
     std::experimental::filesystem::create_directory(path_out);
 
     scat_table.save_visible(path_out);
@@ -129,7 +130,7 @@ namespace mc
   }
 
   // method to calculate scattering rate via davoody et al. method
-  scattering_struct monte_carlo::create_davoody_scatt_table(const cnt& d_cnt, const cnt& a_cnt) {
+  scattering_struct monte_carlo::create_davoody_scatt_table(nlohmann::json j, const cnt& d_cnt, const cnt& a_cnt) {
     auto zshift_prop = _json_prop["zshift [m]"];
     arma::vec z_shift = arma::linspace<arma::vec>(zshift_prop[0], zshift_prop[1], zshift_prop[2]);
 
@@ -145,7 +146,7 @@ namespace mc
     arma::field<arma::cube> rate(theta.n_elem);
     rate.for_each([&](arma::cube& c){c.zeros(z_shift.n_elem, axis_shift_1.n_elem, axis_shift_2.n_elem);});
 
-    exciton_transfer ex_transfer(d_cnt, a_cnt);
+    exciton_transfer ex_transfer(_json_prop, d_cnt, a_cnt);
 
     ex_transfer.save_atom_locations(_output_directory.path(), {0, 0}, 1.5e-9, 0, ".0_angle");
     ex_transfer.save_atom_locations(_output_directory.path(), {0, 0}, 1.5e-9, constants::pi / 2, ".90_angle");
@@ -201,7 +202,8 @@ namespace mc
       }
     }
 
-    scattering_struct scat_table(rate,theta,z_shift,axis_shift_1,axis_shift_2, d_cnt.chirality(), a_cnt.chirality(), epsr);
+    scattering_struct scat_table(rate,theta,z_shift,axis_shift_1,axis_shift_2, d_cnt.chirality(), a_cnt.chirality(), epsr,
+    		j["temperature [kelvin]"].get<float>());
 
     double max_rate = 0;
     double min_rate = 10e15;
@@ -373,8 +375,6 @@ namespace mc
     set_scat_tables(_scat_tables,chirality_map, _all_scat_list);
 
     create_scatterer_buckets(_domain, _max_hopping_radius, _all_scat_list, _scat_buckets, _quenching_list, _q_buckets);
-    //_scat_tables = create_scattering_table(_json_prop);
-    //set_scat_table(_scat_tables[0][0], _all_scat_list);
     set_max_rate(_max_hopping_radius, _all_scat_list);
 
     int n = _json_prop["number of sections for injection region"];

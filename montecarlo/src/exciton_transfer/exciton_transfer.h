@@ -10,7 +10,7 @@
 #include "cnt.h"
 #include "../helper/prepare_directory.hpp"
 
-extern float epsr;
+extern float epsr; // relative permittivity, reset when input.json read.
 
 class exciton_transfer
 {
@@ -36,11 +36,11 @@ private:
 
 public:
   // constructor
-  exciton_transfer(const cnt& cnt1, const cnt& cnt2) {
+  exciton_transfer(nlohmann::json j, const cnt& cnt1, const cnt& cnt2) {
     _directory = prepare_directory("./exciton_transfer",true);
 
     _cnts = {&cnt1, &cnt2};
-    _temperature = 300;
+    _temperature = j["temperature [kelvin]"];
     _broadening_factor = 4.e-3*constants::eV;
 
     std::cout << "\n...exciton transfer parameters:\n";

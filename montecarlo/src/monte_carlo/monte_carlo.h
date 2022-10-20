@@ -427,7 +427,7 @@ private:
   };
 
   // step the simulation in time
-	void step(double dt) {
+  void step(double dt) {
 
     # pragma omp parallel
     {
@@ -439,16 +439,16 @@ private:
 
     // increase simulation time
     _time += dt;
-	};
+  };
 
   // high level method to calculate proper scattering table
-	scatt_t create_scattering_table(nlohmann::json j);
+  scatt_t create_scattering_table(nlohmann::json j);
 
-	// method to calculate scattering rate via forster method
-	scattering_struct create_forster_scatt_table(double gamma_0, double r_0);
+  // method to calculate scattering rate via forster method
+  scattering_struct create_forster_scatt_table(double gamma_0, double r_0);
 
-	// method to calculate scattering rate via davoody et al. method
-	scattering_struct create_davoody_scatt_table(const cnt& d_cnt, const cnt& a_cnt);
+  // method to calculate scattering rate via davoody et al. method
+  scattering_struct create_davoody_scatt_table(nlohmann::json j, const cnt& d_cnt, const cnt& a_cnt);
 
   // divide scatterers into buckets based on their location, and set the pointers to enclosing and neighboring buckets
   // for each scatterer object
@@ -1056,7 +1056,7 @@ private:
 
   void print_exciton_scatter_times();
 
-  scattering_struct recovery_scatt_table(std::experimental::filesystem::path path, const cnt& d_cnt, const cnt& a_cnt);
+  scattering_struct recovery_scatt_table(nlohmann::json j, std::experimental::filesystem::path path, const cnt& d_cnt, const cnt& a_cnt);
 
 }; // end class monte_carlo
 

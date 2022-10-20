@@ -30,32 +30,32 @@ int main(int argc, char *argv[]) {
   std::srand(100);
 
 	// get the input JSON filename
-	std::string filename;
-	if (argc <= 1){
-		filename = "input.json";
-	} else {
-		filename = argv[1];
-	}
+  std::string filename;
+  if (argc <= 1){
+  	filename = "input.json";
+  } else {
+  	filename = argv[1];
+  }
 
-	// read the input JSON file
-	std::ifstream input_file(filename.c_str());
-	nlohmann::json j;
-	input_file >> j;
+  // read the input JSON file
+  std::ifstream input_file(filename.c_str());
+  nlohmann::json j;
+  input_file >> j;
 
-	// get the json part related to exciton mc simulation
-	if (j.count("exciton monte carlo")==0){
-		throw std::invalid_argument("json input file does not contain \"exciton monte carlo\"");
-	}
-	nlohmann::json json_mc = j["exciton monte carlo"];
+  // get the json part related to exciton mc simulation
+  if (j.count("exciton monte carlo")==0){
+  	throw std::invalid_argument("json input file does not contain \"exciton monte carlo\"");
+  }
+  nlohmann::json json_mc = j["exciton monte carlo"];
 
-	// if exciton transfer type is davoody get cnt json information and add it to json_mc
-	if (j["exciton monte carlo"]["rate type"].get<std::string>() == "davoody"){
-		json_mc["cnts"] = j["cnts"];
-	}
+  // if exciton transfer type is davoody get cnt json information and add it to json_mc
+  if (j["exciton monte carlo"]["rate type"].get<std::string>() == "davoody"){
+  	json_mc["cnts"] = j["cnts"];
+  }
 
-	//***********************************************************************************************
-	// create monte carlo object and run the MC simulation
-	//***********************************************************************************************
+  //***********************************************************************************************
+  // create monte carlo object and run the MC simulation
+  //***********************************************************************************************
 
   assert(j.count("exciton monte carlo")>0);
 

@@ -17,11 +17,15 @@
     "keep old results": false,
 
     "rate type": "davoody",
+    
+    "comment": "the following four properties affect scatter table but will NOT create new scatter table when changed",
     "zshift [m]": [ 1.5e-9, 10e-9, 11 ],
     "axis shift 1 [m]": [ -10e-9, 10e-9, 11 ],
     "axis shift 2 [m]": [ -10e-9, 10e-9, 11 ],
     "theta [degrees]": [ 0, 180, 21 ],
+    
     "temperature [kelvin]": 300,
+    "relative permittivity": 1,
 
     "max hopping radius [m]": 20e-9,
     "max dissolving radius [m]": 2e-9,

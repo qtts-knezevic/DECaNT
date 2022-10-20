@@ -20,7 +20,7 @@ struct scattering_struct {
                     const arma::vec& m_axis_shift_2,
                     const std::vector<int>& m_donor_chiral,
                     const std::vector<int>& m_accepter_chiral,
-                    const float epsilonr) {
+                    const float epsilonr, const float temperature) {
     rate = m_rate;
     theta = m_theta;
     z_shift = m_z_shift;
@@ -29,6 +29,7 @@ struct scattering_struct {
     donor_chiral = m_donor_chiral;
     accepter_chiral = m_accepter_chiral;
     er = epsilonr;
+    temp = temperature;
   };
 
   arma::field<arma::cube> rate;
@@ -39,6 +40,7 @@ struct scattering_struct {
   std::vector<int> donor_chiral;
   std::vector<int> accepter_chiral;
   float er;
+  float temp;
 
   // get the scattering rate based on the precalculated rates for
   // discrete mesh points. Right now this equation only gets the
@@ -64,7 +66,7 @@ struct scattering_struct {
   typedef std::experimental::filesystem::path path_t;
   void save(path_t path) {
     path /= std::to_string(donor_chiral[0])+std::to_string(donor_chiral[1])+std::to_string(accepter_chiral[0])
-    		+std::to_string(accepter_chiral[1])+"_"+std::to_string(er)+"scat_table";
+    		+std::to_string(accepter_chiral[1])+"_"+std::to_string(temp)+"_"+std::to_string(er)+"scat_table";
     std::experimental::filesystem::create_directory(path);
     path /= "scat_table";
 
