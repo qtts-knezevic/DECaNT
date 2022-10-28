@@ -402,13 +402,21 @@ private:
     return p_list;
   }
 
-	// save the json properties that is read and parsed from the input_json file.
-	void save_json_properties() {
-		std::ofstream json_file;
-		json_file.open(_output_directory.path() / "input.json", std::ios::out);
-		json_file << std::setw(4) << _json_prop << std::endl;
-		json_file.close();
-	};
+  // save the json properties that is read and parsed from the input_json file.
+  void save_json_properties() {
+  	std::ofstream json_file;
+  	json_file.open(_output_directory.path() / "input.json", std::ios::out);
+  	json_file << std::setw(4) << _json_prop << std::endl;
+  	json_file.close();
+  	
+  	// also save the mesh generation properties used
+  	std::string mesh_path = _json_prop["mesh input directory"];
+  	std::experimental::filesystem::directory_entry mesh_directory;
+  	mesh_directory.assign(mesh_path); // function shouldn't be called if mesh directory not already read from...
+  	std::experimental::filesystem::copy_file(mesh_directory.path() / "input.json",
+  		_output_directory.path() / "mesh_input.json");
+  	
+  };
 
   // find minimum of the minimum coordinates of the scattering objects, this function will effectively give us the
   // simulation domain
