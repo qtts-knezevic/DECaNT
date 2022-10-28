@@ -1,0 +1,25 @@
+#Enter a simulation output data directory (enter blank line when all directories have been specified):
+../cnt_mesh_fiber_test
+#Enter a simulation output data directory (enter blank line when all directories have been specified):
+
+#Creating Plot 1
+#0 /home/seanathan/Desktop/school/research/DECaNT/montecarlo/cnt_mesh_fiber_test
+#Enter directories to plot data from (enter numbers given in above list, on one space-separated line):
+0
+#0  time
+#1  tube spacing
+#2  quenching site density
+#3  temperature
+#4  relative permittivity
+#Enter data to plot on x-axis (enter a single number given in above list):
+0
+#0 diffusion length 
+#1  diffusion tensor coefficients
+# 2
+#Enter data to plot on y-axis (enter up to two numbers given in above list, on one space-separated line):
+0
+#All plots created? (y/Y to exit plot menu)
+y
+#Directory to save plots to (be careful, will overwrite previous plot files if present):
+.
+#Saving to .
