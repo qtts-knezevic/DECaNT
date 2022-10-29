@@ -1,11 +1,20 @@
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 import os
-import matplotlib as mpl
 import json
+import pandas as pd
 
-# TODO fix EOF error on input?????
-#  howto: change prompt to put comment before EVERY line not just first
+# TODO see if some of these aren't needed
+# X-AXIS GLOBALS
+TIME                   = 0
+TUBE_SPACING           = 1
+QUENCHING_SITE_DENSITY = 2
+TEMPERATURE            = 3
+RELATIVE_PERMITTIVITY  = 4
+
+AVG_DISPLACEMENT_SQUARED      = 0
+DIFFUSION_TENSOR              = 1
+DIFFUSION_LENGTH              = 2
+DIFFUSION_TENSOR_COEFFICIENTS = ["Dxx", "Dxy", "Dxz", "Dyy", "Dyz", "Dzz"]
 
 def take_input(l):
   '''
@@ -92,7 +101,7 @@ def main():
     elif not os.path.exists(os.path.join(inputval, "particle_diffusion_tensor.dat")):
       prompt("Directory doesn't contain diffusion tensor data file, particle_diffusion_tensor.dat!", ins)
     elif (inputval != ""):
-      directories.append(os.path.abspath(inputval)) # standard format, so duplicates can be identified
+      directories.append(os.path.abspath(inputval)) # standard directory format, so duplicates can be identified
   # end while
 
   directories = list(set(directories)) #remove duplicate paths
@@ -101,37 +110,32 @@ def main():
   for d in directories:
     f0 = open(os.path.join(d, "input.json"))
     f1 = open(os.path.join(d, "mesh_input.json"))
-    f2 = open(os.path.join(d, "particle_diffusion_length.dat"))
+    f2 = open(os.path.join(d, "particle_displacement.avg.squared.dat"))
     f3 = open(os.path.join(d, "particle_diffusion_tensor.dat"))
+    f4 = open(os.path.join(d, "particle_diffusion_length.dat"))
               
     data.append({"input": json.loads(f0.read()),
                  "mesh_input": json.loads(f1.read()),
-                 "particle_diffusion_length": f2.read().split("\n"),
-                 "particle_diffusion_tensor": f3.read().split("\n")
+                 "displacement_avg_squared": pd.read_csv(f2, comment="#"),
+                 "diffusion_tensor": pd.read_csv(f3, comment="#"),
+                 "diffusion_length": pd.read_csv(f4, comment="#")
                  })
 
     f0.close()
     f1.close()
     f2.close()
     f3.close()
+    f4.close()
   # end for
   
   plots = []
 
   # data 
   xAxis = 0
-  yAxis = 0
+  yAxis = []
   dataPoints = []
 
-  # TODO see if some of these aren't needed
-  TIME                   = 0
-  TUBE_SPACING           = 1
-  QUENCHING_SITE_DENSITY = 2
-  TEMPERATURE            = 3
-  RELATIVE_PERMITTIVITY  = 4
-
-  DIFFUSION_LENGTH              = 0
-  DIFFUSION_TENSOR_COEFFICIENTS = 1
+  
   
   # TODO: make x-axis selectable as either time or some quantity from
   # x-axis: time, tube spacing, quenching site density | temperature, permittivity
@@ -150,28 +154,26 @@ def main():
       prompt(str(i) + " " + directories[i] + ("" if i == (len(directories) - 1) else "\n"), ins)
 
     usedDirectoryIndices = []
-    usedDirectories = []
     usedData = []
 
     prompt("Enter directories to plot data from (enter numbers given in above list, on one space-separated line):", ins)
     while len(usedDirectoryIndices) == 0:
       inputval = take_input(ins);
-      usedDirectoryIndices.extend(inputval.split())
-      usedDirectoryIndices = list(set(usedDirectoryIndices)) # remove duplicates
+      
+      for i in inputval.split():
+        try:
+          i = int(i)
+        except:
+          i = -1;
+        if i > -1 and i < len(directories):
+          usedDirectoryIndices.append(i)
+        else:
+          prompt(str(i) + " was not a valid selection! (-1 may indicate a non-integer input was entered)", ins)
 
-    
+    usedDirectoryIndices = list(set(usedDirectoryIndices)) # remove duplicates
     
     for i in usedDirectoryIndices:
-      try:
-        i = int(i)
-      except:
-        i = -1;
-      if i > -1 and i < len(directories):
-        usedDirectories.append(directories[i])
-        usedData.append(data[i])
-    # end for
-
-    print(usedDirectories) # TODO remove
+      usedData.append(data[i])
 
     # prompt for data to graph on x-axis
     inputval = -1
@@ -188,37 +190,52 @@ def main():
     
     xAxis = inputval
 
-    # prompt for data to graph on y-axis
+    # prompt for data to graph on y-axis (only two selections possible, since we can only have 2 y-axes...)
     inputval = -1
-
+    prompt("0 average displacement squared \n1 diffusion tensor\n2 diffusion length", ins)
+    prompt("Enter data to plot on y-axis (enter up to two numbers given in above list, on one space-separated line):", ins)
     
-    while inputval < 0 or inputval > 1:
-      prompt("0 diffusion length \n1 diffusion tensor coefficients", ins)
-      prompt("Enter data to plot on y-axis (enter up to two numbers given in above list, on one space-separated line):", ins)
+    while len(yAxis) == 0:
       inputval = take_input(ins)
-      
-      try:
-        inputval = int(inputval)
-        yAxis.append(inputval)
-      except:
-        inputval = -1
+
+      for i in inputval.split():
+        if len(yAxis) > 2:
+          break
+        try:
+          i = int(i)
+        except:
+          i = -1
+        
+        if i > -1 and i < 3:
+          yAxis.append(i)
+        else:
+          prompt(str(i) + " was not a valid selection! (-1 may indicate a non-integer input was entered)", ins)
     # end while
     
-      
-    if DIFFUSION_TENSOR_COEFFICIENTS in yAxis :
-      prompt("Enter tensor elements to plot (single line, space separated, xx xy xz yx yy yz zx zy zz))", ins)
-    if plotDiffusionL:
-      prompt("")
+    # prompt for diffusion tensor coefficients to use if plotting tensor
+    if DIFFUSION_TENSOR in yAxis:
+      while not any(i in yAxis for i in DIFFUSION_TENSOR_COEFFICIENTS):
+        prompt("Enter tensor elements to plot (single line, space separated, xx xy xz yy yz zz))", ins)
+        inputval = take_input(ins)
+        
+        for c in map(str.lower, inputval.split()):
+          if "D" + c in DIFFUSION_TENSOR_COEFFICIENTS:
+            yAxis.append("D" + c)
+          else:
+            prompt(c + " was not a valid coefficient", ins)
+    # end if
 
-    prompt("Plot title:")
-    plots.append(plotObj(take_input(ins), xAxis, yAxis, usedDirectories, usedData))
+    prompt("Plot title:", ins)
+    plots.append(plotObj(take_input(ins), xAxis, yAxis, usedData))
+
+    plots[len(plots) - 1].outputPlot()
+    # TODO prompt for graphical adjustments to graph
     
     prompt("All plots created? (Y/y to exit plot menu)", ins)
     
     inputval = take_input(ins).upper()
     if len(inputval) == 1 and inputval[0] == "Y":
       break
-    
   # end while
 
   # Prompt for directory to plot data in
@@ -242,43 +259,115 @@ def main():
     else:
       prompt("Saving to " + saveDirectory, ins)
       break
-      
   # end while
 
-  # output all plots
+  # save all plots
+  for p in range(len(plots)):
+    plots[p].savePlot(saveDirectory, p)
 
   # write all input arguments (with prompts as comments) to file for reuse
   savedInputFile = open(os.path.join(saveDirectory, "input.log"), "w")
   savedInputFile.write("\n".join(ins) + "\n")
   savedInputFile.close()
 
+  print("If any plots were specified incorrectly, the input.log file can be modified and piped as input to this script to produce corrected graphs")
 # end main
 
-  
-    
+
 class plotObj:
+  '''
+  Holds the data necessary to draw a plot, and contains methods to
+  draw or save a plot from that data
+  '''
   
-  def __init__(self, title, x, y, directories, data):
+  def __init__(self, title, x, y, data):
     '''
-    Constructor for 
+    Constructor for plotObj
 
     Parameters:
+      title: title of this plot
+      x (int): data to use for x-axis (see globals at top of file)
+      y (list): data to use for y-axis
+      data (list of dicts): the data sources from which to plot
+    '''
+
+    self.title = title
+    self.x = x
+    self.y = y
+    self.data = data
+
+  # end __init__
+    
+  def createPlot(self):
+    '''
+    Creates this plot.
+
+    Returns:
+      This plot as mpl figure.
+    '''
+    
+    fig = plt.figure()
+    ax = fig.subplots()
+    ax.set_title(self.title)
+    coeffs = list(set(DIFFUSION_TENSOR_COEFFICIENTS).intersection(self.y))
+
+    # TODO calculate average final values when not plotting over time
+    if self.x != TIME:
+        pass
+    
+    if self.x == TIME:
+      for d in self.data:
+        maxTime = len(d["diffusion_tensor"]["time"])
+        minTime = int(maxTime / 4) # look into after tensor calculation corrected
+        
+        for i in range(minTime, len(d["diffusion_tensor"]["time"])):
+          print(i)
+          for c in coeffs:
+            # TODO different colors...
+            ax.plot(list(map(float, d["diffusion_tensor"]["time"][minTime : maxTime])), list(map(float, d["diffusion_tensor"][c][minTime : maxTime])), color="black",  marker=".")
       
+      ax.plot()
+    elif self.x == TUBE_SPACING:
+      for d in self.data:
+        ax.plot(float(d["mesh_input"]["cnt intertube spacing [nm]"]), 1)
+    elif self.x == QUENCHING_SITE_DENSITY:
+      for d in self.data:
+        ax.plot(float(d["input"]["density of quenching sites"]), 1)
+    elif self.x == TEMPERATURE:
+      for d in self.data:
+        ax.plot(float(d["input"]["temperature [kelvin]"]), 1)
+    elif self.x == RELATIVE_PERMITTIVITY:
+      for d in self.data:
+        ax.plot(float(d["input"]["relative permittivity"]), 1)
+
+    fig.show()
+    return fig
+  
+  # end createPlot
+
+  def outputPlot(self):
     '''
-    this.x = x
-    this.y = y
-    this.directories = directories
-    this.data = data
-    
-  def outputPlot(d):
+    Creates and outputs this plot.
     '''
     
+    self.createPlot().show()
+  
+  # end savePlot
+    
+  def savePlot(self, d, n):
+    '''
+    Creates and saves this plot to directory d.
     
     Parameters:
       d (str): path to directory plot will be saved in
+      n (int): number identifying this as the nth plot, used in output filename
     '''
-    pass
+    
+    self.createPlot().savefig(os.path.join(d, "plot" + str(n)))
   
+  # end savePlot
+
+#end plotObj
 
 if __name__ == '__main__':
   main()
