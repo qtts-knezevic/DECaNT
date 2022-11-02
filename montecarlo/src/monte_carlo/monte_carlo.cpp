@@ -414,7 +414,7 @@ namespace mc
           bool condition = true;
           const scatterer* s = nullptr;
         // std::cout << "chiral" << old_scat->chirality()[0] << "," << old_scat->chirality()[1] << ",";
-          do{
+          do {
             int dice = std::rand() % _inject_scats.size();
             s = _inject_scats[dice];
             const arma::vec old_chiral = old_scat->chirality();
@@ -560,13 +560,16 @@ namespace mc
     double Dij, D1, D2, D3;
     for(int i = 0; i < 3; i++){
       for(int j = i; j < 3; j++){
+      	D1 = 0; D2 = 0; D3 = 0;
         for(const auto& p : _particle_list){
-          D1 += p.pos(i)*p.pos(j);
-          D2 += p.pos(i);
-          D3 += p.pos(j);
+          D1 += p.delta_pos(i)*p.delta_pos(j);
+          D2 += p.delta_pos(i);
+          D3 += p.delta_pos(j);
         }
-        Dij = (D1 + D2 * D3)/(double)(_particle_list.size());
-        Dij /= double(2 * double(time()));
+        D1 /= double(_particle_list.size());
+        D2 /= double(_particle_list.size());
+        D3 /= double(_particle_list.size());
+        Dij = (D1 - (D2 * D3))/(2 * time());
         _diffusion_tensor_file << "," << Dij;
       }
     }
@@ -580,7 +583,7 @@ namespace mc
 
       _diffusion_length_file << std::showpos << std::scientific;
       
-      _diffusion_length_file << "# this file contains the diffusion length in x,y,z of the particle ensemble over time" << std::endl
+      _diffusion_length_file << "# this file contains the diffusion length in x,y,z of each particle in the ensemble" << std::endl
                                 << "# number of particles: " << _particle_list.size() << std::endl
                                 << std::endl;
 
