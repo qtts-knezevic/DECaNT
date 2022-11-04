@@ -541,7 +541,6 @@ namespace mc
     _displacement_squard_file << time() << "," << avg_x2 << "," << avg_y2 << "," << avg_z2 << std::endl;
   }
 
-  // TODO: the method currently not available. Error in calculation.
   void monte_carlo::kubo_save_diffusion_tensor(){
     if (!_diffusion_tensor_file.is_open()) {
       _diffusion_tensor_file.open(_output_directory.path() / "particle_diffusion_tensor.dat", std::ios::out);

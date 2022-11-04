@@ -47,7 +47,7 @@ private:
   arma::vec _delta_pos{0,0,0};
 
   // final diffusion length
-  arma::vec _diff_len{0,0,0};
+  arma::vec _diff_len{NAN,NAN,NAN};
 
   // bool indicator whether exciton is quenched.
   bool isDisolved = false;
@@ -143,7 +143,8 @@ public:
   // void update_past_delta_pos() { _past_delta_pos += _delta_pos; };
 
   // update diffusion length after trapped in a quenching site
-  void update_diff_len() {_diff_len = pos() - init_pos();};
+  // _diff_len = pos() - init_pos();
+  void update_diff_len() {_diff_len = _delta_pos;};
 
   // return value of diffusion length
   const arma::vec& diff_len() {return _diff_len;};
