@@ -2,6 +2,8 @@ import math
 import os
 import json
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+import matplotlib.lines as mlines
 import pandas as pd
 
 # X-AXIS GLOBALS
@@ -10,6 +12,13 @@ TUBE_SPACING           = 1
 QUENCHING_SITE_DENSITY = 2
 TEMPERATURE            = 3
 RELATIVE_PERMITTIVITY  = 4
+
+# keys for data set dict to reach x value for given
+# 
+X_KEYS = [None, ("mesh_input", "cnt intertube spacing [nm]"),
+          ("input", "density of quenching sites"),
+          ("input", "temperature [kelvin]"),
+          ("input", "relative permittivity")]
 
 # Y-AXIS GLOBALS
 AVG_DISPLACEMENT_SQUARED      = 0
@@ -108,7 +117,7 @@ def main():
     input_val = take_input(ins)
     
     if (input_val == "" and len(directories) != 0):
-      break;
+      break
     elif not os.path.exists(input_val):
       prompt("Not a valid path!", ins)
     elif os.path.isfile(input_val):
@@ -137,8 +146,7 @@ def main():
     f3 = open(os.path.join(d, "particle_diffusion_tensor.dat"))
     f4 = open(os.path.join(d, "particle_diffusion_length.dat"))
               
-    data.append({"set": len(data),
-                 "input": json.loads(f0.read()),
+    data.append({"input": json.loads(f0.read()),
                  "mesh_input": json.loads(f1.read()),
                  "avg_displacement_squared": pd.read_csv(f2, comment="#"),
                  "diffusion_tensor": pd.read_csv(f3, comment="#"),
@@ -157,15 +165,11 @@ def main():
   # data 
   x_axis = 0
   y_axis = []
+
   
-  # TODO: make x-axis selectable as either time or some quantity from
-  # x-axis: time, tube spacing, quenching site density | temperature, permittivity
-  # y-axis:
-  # data points: random/parallel, single/bundle, chirality (6,5), (8,7), diffusion tensor coefficients
-  #   diffusion length, lifetime ;
   # Maybe preview plot and then have option for editing???
   
-  # loop broken internally by os.exit
+  # loop broken internally
   while 1:
     prompt("Creating Plot " + str(len(plots) + 1), ins)
     
@@ -178,13 +182,13 @@ def main():
 
     prompt("Enter directories to plot data from (enter numbers given in above list, on one space-separated line):", ins)
     while len(used_directory_indices) == 0:
-      input_val = take_input(ins);
+      input_val = take_input(ins)
       
       for i in input_val.split():
         try:
           i = int(i)
         except:
-          i = -1;
+          i = -1
         if i > -1 and i < len(directories):
           used_directory_indices.append(i)
         else:
@@ -265,10 +269,12 @@ def main():
             prompt(c + " was not a valid coefficient", ins)
     # end if
 
+    # currently plots all diffusion length coefficients
+
     prompt("Plot title:", ins)
     plots.append(plotObj(take_input(ins), x_axis, y_axis, used_data))
 
-    plots[len(plots) - 1].output_plot()
+    plots[-1].output_plot()
     # TODO prompt for graphical adjustments to graph
     
     prompt("All plots created? (Y/y to exit plot menu)", ins)
@@ -278,9 +284,7 @@ def main():
       break
   # end while
 
-  # Prompt for properties of data sets to differentiate in data points
-
-  # Prompt for directory to plot data in
+  # prompt for plot output directory
   save_directory = "."
   
   while 1:
@@ -307,8 +311,13 @@ def main():
   for p in range(len(plots)):
     plots[p].save_plot(save_directory, p)
 
-  # write all input arguments (with prompts as comments) to file for reuse
+  # write all input arguments (with prompts as comments) to file in output directory for reuse
   saved_input_file = open(os.path.join(save_directory, "input.log"), "w")
+  saved_input_file.write("\n".join(ins) + "\n")
+  saved_input_file.close()
+
+  # also save input file to current directory
+  saved_input_file = open("./last_input.log", "w")
   saved_input_file.write("\n".join(ins) + "\n")
   saved_input_file.close()
 
@@ -330,7 +339,7 @@ class plotObj:
       title: title of this plot
       x (int): data to use for x-axis (see globals at top of file)
       y (list): data to use for y-axis
-      data (list of dicts): the data sources from which to plot
+      data (list of dicts): the simulation output data sources from which to plot
     '''
 
     self.title = title
@@ -348,73 +357,137 @@ class plotObj:
       This plot as mpl figure.
     '''
     
-    fig = plt.figure()
+    fig = plt.figure(figsize=[8,6])
     ax = fig.subplots()
+    ax2 = ax
     if DIFFUSION_TENSOR in self.y and AVG_DISPLACEMENT_SQUARED in self.y:
       # used if two types of y data plotted
       ax2 = ax.twinx() 
     ax.set_title(self.title)
+
+    # isolate coefficient specifiers from y-axis sets list
     avg_disp_coeffs = list(set(AVG_DISP_SQ_COEFFICIENTS).intersection(self.y))
     avg_disp_coeffs.sort() # won't be the order the user specified, but at least it will be consistent
     tensor_coeffs = list(set(DIFFUSION_TENSOR_COEFFICIENTS).intersection(self.y))
     tensor_coeffs.sort()
+
+    # classify data sets on the basis of everything but the x-axis variable (if x-axis variable something
+    # other than time) so that data sets with the same parameters aren't plotted as distinct
+    # do not classify by parameters which only take one value across all data sets
+    seen_params = {"cnt chirality": [], "bundle": [], "parallel": [],
+                   TUBE_SPACING: [], QUENCHING_SITE_DENSITY: [],
+                   TEMPERATURE: [], RELATIVE_PERMITTIVITY: []}
+
+    for d in self.data:
+      for i in ("cnt chirality", "bundle", "parallel"):
+        if not d["mesh_input"][i] in seen_params[i]:
+          seen_params[i].append(d["mesh_input"][i])
+      for i in range(len(X_KEYS)):
+        if X_KEYS[i] != None and i != self.x and not d[X_KEYS[i][0]][X_KEYS[i][1]] in seen_params[i]:
+          seen_params[i].append(d[X_KEYS[i][0]][X_KEYS[i][1]])
+    # end for
     
-    # used for point data types (avg displacement, certain tensor coeff, etc) and data sets, respectively
-    pt_colors   = ["black", "blue", "orange", "green", "gray", "magenta", "maroon", "yellow", "turquoise"]
+    data_set_classes = []
+    
+    for d in self.data:
+      data_set_class = ""
+      
+      for i in ("cnt chirality", "bundle", "parallel"):
+        if len(seen_params[i]) > 1:
+          data_set_class += str(d["mesh_input"][i]) + " "
+      
+      for i in range(len(X_KEYS)):
+        if X_KEYS[i] != None and i != self.x and len(seen_params[i]) > 1:
+          data_set_class += str(d[X_KEYS[i][0]][X_KEYS[i][1]]) + " "
+
+      d.update({"set": data_set_class})
+      
+      if not data_set_class in data_set_classes:
+        data_set_classes.append(data_set_class)
+    # end for
+
+    # diffusion length has three coefficients. prefixed with dl_ so as not to conflict with displacement coeffients
+    # TODO seems to add wtice, see what's up with that
+    if DIFFUSION_LENGTH in self.y:
+      self.y.extend(["dl_x", "dl_y", "dl_z"])
+
+    # displacement and diffusion length and tensor are not themselves plotted, their coefficients are
+    # so don't assign them colors
+    y_plotted_only = self.y.copy()
+    if AVG_DISPLACEMENT_SQUARED in y_plotted_only:
+      y_plotted_only.remove(AVG_DISPLACEMENT_SQUARED)
+    if DIFFUSION_TENSOR in y_plotted_only:
+      y_plotted_only.remove(DIFFUSION_TENSOR)
+    if DIFFUSION_LENGTH in y_plotted_only:
+      y_plotted_only.remove(DIFFUSION_LENGTH)
+
+    # used to distinguish point coefficients, data sets when plotting over time,
+    # and data sets when plotting over a different quantity, respectively
+    pt_colors  = ["black", "blue", "orange", "green", "gray", "magenta", "maroon", "yellow", "turquoise"]
     linestyles = ["solid", "dashed", "dotted", "dashdot", (0, (5,2,5,2,1,2)), (0,(1,5)), (0, (5,2,1,2,1,2)), (0,(10,5)), (0,(5,10))]
-    pt_markers  = [".", "x", "d", "o", "s", "+", "|", "v", "1", "^", "3", "*", "2", "<", "4", ">"]
+    pt_markers = [".", "x", "d", "o", "s", "+", "|", "v", "1", "^", "3", "*", "2", "<", "4", ">"]
 
     used_pt_colors  = {}
     used_linestyles = {}
     used_pt_markers = {}
-
-    #TODO classify data sets on basis of chirality, bundled, parallel
-
-    # diffusion length and tensor are not themselves plotted, their coefficients are, so don't assign them colors
-    y_plotted_only = self.y.copy()
-    if DIFFUSION_TENSOR in y_plotted_only:
-      y_plotted_only.remove(DIFFUSION_TENSOR)
-    if AVG_DISPLACEMENT_SQUARED in y_plotted_only:
-      y_plotted_only.remove(AVG_DISPLACEMENT_SQUARED)
     
     for i in range(len(y_plotted_only)):
       # modulus for safety but there should never be more than 9
+      # (maximum 6 tensor coefficients plus maximum 3 from diffusion length or avg displacement sq)
       used_pt_colors.update({y_plotted_only[i]: pt_colors[i % len(pt_colors)]})
 
-    for i in range(len(self.data)):
-      # modulus for safety, possible to plot more than 16 data sets but please don't
-      used_pt_markers.update({self.data[i]["set"]: pt_markers[i % len(pt_markers)]})
+    for i in range(len(data_set_classes)):
+      # different linestyles used for multiple data sets when plotting over time.
+      # modulus for safety, possible to plot more than 9 data sets but please don't do that
+      # when plotting over time.
+      used_linestyles.update({data_set_classes[i]: linestyles[i % len(linestyles)]})
 
-    for i in range(len(self.data)):
-      # modulus for safety, possible to plot more than 9 data sets but please don't
-      used_linestyles.update({self.data[i]["set"]: linestyles[i % len(linestyles)]})
+    for i in range(len(data_set_classes)):
+      # modulus for safety but there should never be more than 9
+      used_pt_markers.update({data_set_classes[i]: pt_markers[i % len(pt_markers)]})
+
+    ax.legend(handles=[mpatches.Patch(color=used_pt_colors[c], label=c) for c in y_plotted_only], loc="upper right")
+    ax.add_artist(ax.get_legend())
     
     if self.x == TIME:
-      plt.xlabel("Time [s]")
-
+      ax.legend(handles=[mlines.Line2D([], [], linestyle=used_linestyles[s], label=s) for s in data_set_classes], loc="upper left")
+      
+      # if plotting over time: list of time values vs list of data values can be plotted directly
+      ax.set_xlabel("Time [s]")
+      
       for d in self.data:
         curr_ax = ax
+        
         t = list(map(float, d["diffusion_tensor"]["time"]))
         
         if AVG_DISPLACEMENT_SQUARED in self.y:
+          ax.set_ylabel("Average Displacement Squared [m^2]")
+          
           for c in avg_disp_coeffs:
             curr_ax.plot(t, list(map(float, d["avg_displacement_squared"][c])), color=used_pt_colors[c],
                          marker="None", linestyle=used_linestyles[d["set"]])
           curr_ax = ax2
 
         if DIFFUSION_TENSOR in self.y:
+          curr_ax.set_ylabel("Diffusion Tensor Element [m^2 / s]")
+          
           for c in tensor_coeffs:
             curr_ax.plot(t, list(map(float, d["diffusion_tensor"][c])), color=used_pt_colors[c],
                          marker="None", linestyle=used_linestyles[d["set"]])
+      # end for
       
     else:
+      ax.legend(handles=[mlines.Line2D([], [], marker=used_pt_markers[s], label=s) for s in data_set_classes], loc="upper left")
+      print(used_pt_colors)
       
       # final vales for diffusion tensor coeffs, avg displacement coeffs, averages for diffusion length
+      # (final values for coefficients taken as average of latter half of data, which is generally
+      # accurate if there are no quenching sites to continally decrease them)
       for d in self.data:
         if AVG_DISPLACEMENT_SQUARED in self.y:
           for c in avg_disp_coeffs:
-            count = 0;
-            total = 0;
+            count = 0
+            total = 0
             
             for v in d["avg_displacement_squared"][c][int(len(d["avg_displacement_squared"]["time"]) / 2):]:
               if not math.isnan(v):
@@ -424,8 +497,8 @@ class plotObj:
         
         if DIFFUSION_TENSOR in self.y:
           for c in tensor_coeffs:
-            count = 0;
-            total = 0;
+            count = 0
+            total = 0
             
             for v in d["diffusion_tensor"][c][int(len(d["diffusion_tensor"]["time"]) / 2):]:
               if not math.isnan(v):
@@ -435,44 +508,47 @@ class plotObj:
         
         if DIFFUSION_LENGTH in self.y:
           for c in ("x", "y", "z"):
-            count = 0;
-            total = 0;
+            count = 0
+            total = 0
             
             for v in d["diffusion_length"][c]:
-              if not math.isnan(v):
+              if isinstance(v, float): #NAN check (parsed nans remain strings...)
                 count += 1
                 total += abs(v)
-            
-            d.update({"dl_" + c + "_avg": total / count})
 
-      x_key_1 = "mesh_input" if self.x == TUBE_SPACING else "input"
-      x_key_2 = "cnt intertube spacing [nm]" if self.x == TUBE_SPACING else "density of quenching sites" if self.x == QUENCHING_SITE_DENSITY else "temperature [kelvin]" if self.x == TEMPERATURE else "relative permittivity" #sorry
-      
+            count += 1 if count == 0 else 0 # prevent division by 0
+            d.update({"dl_" + c + "_avg": total / count})
+      # end for
+
+      x_key_0 = X_KEYS[self.x][0]
+      x_key_1 = X_KEYS[self.x][1]
+
+      # if plotting over a property specified in the mesh generation/simulation properties:
+      # points are plotted one by one (one for each simulation output/y-data set pair)
       for d in self.data:
         curr_ax = ax
         
         if AVG_DISPLACEMENT_SQUARED in self.y:
           for c in avg_disp_coeffs:
-            ax.plot(float(d[x_key_1][x_key_2]), d["ads_" + c + "_final"], color=used_pt_colors[c],
+            ax.plot(float(d[x_key_0][x_key_1]), d["ads_" + c + "_final"], color=used_pt_colors[c],
                     marker=used_pt_markers[d["set"]], markersize="8", fillstyle="none")
           curr_ax = ax2
           
         if DIFFUSION_TENSOR in self.y:
           for c in tensor_coeffs:
-            ax.plot(float(d[x_key_1][x_key_2]), d["dt_" + c + "_final"], color=used_pt_colors[c],
+            ax.plot(float(d[x_key_0][x_key_1]), d["dt_" + c + "_final"], color=used_pt_colors[c],
                     marker=used_pt_markers[d["set"]], markersize="8", fillstyle="none")
           curr_ax = ax2
           
         if DIFFUSION_LENGTH in self.y:
-          for c in ("x", "y", "z"):
-            ax.plot(float(d[x_key_1][x_key_2]), d["dl_" + c + "_avg"], color=used_pt_colors[c],
+          for c in ("dl_x", "dl_y", "dl_z"):
+            ax.plot(float(d[x_key_0][x_key_1]), d[c + "_avg"], color=used_pt_colors[c],
                     marker=used_pt_markers[d["set"]], markersize="8", fillstyle="none")
-          
       # end for
       
     # end else
 
-    fig.show()
+    fig.tight_layout()
     return fig
   
   # end create_plot
