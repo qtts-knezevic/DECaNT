@@ -444,7 +444,6 @@ class plotObj:
     # end for
 
     # diffusion length has three coefficients. prefixed with diffusion length so as not to conflict with displacement coeffients
-    # TODO seems to add wtice, see what's up with that
     if DIFFUSION_LENGTH in self.y:
       self.y.extend(["diffusion len x", "diffusion len y", "diffusion len z"])
 
@@ -521,15 +520,15 @@ class plotObj:
         ax.legend(handles=[mlines.Line2D([], [], marker=used_pt_markers[s], label=s) for s in data_set_classes], loc="upper right", bbox_to_anchor=(1, -0.125))
       
       # final vales for diffusion tensor coeffs, avg displacement coeffs, averages for diffusion length
-      # (final values for coefficients taken as average of latter half of data, which is generally
-      # accurate if there are no quenching sites to continally decrease them)
+      # (final values for coefficients taken as average of latter quarter of data, compromise between effect of quenching
+      # decreasing values with quenching sites present and static (but noisy) values otherwise)
       for d in self.data:
         if AVG_DISPLACEMENT_SQUARED in self.y:
           for c in avg_disp_coeffs:
             count = 0
             total = 0
             
-            for v in d["avg_displacement_squared"][c][int(9 * len(d["avg_displacement_squared"]["time"]) / 10):]:
+            for v in d["avg_displacement_squared"][c][int(3 * len(d["avg_displacement_squared"]["time"]) / 4):]:
               if not math.isnan(v):
                 count += 1
                 total += v
@@ -540,7 +539,7 @@ class plotObj:
             count = 0
             total = 0
             
-            for v in d["diffusion_tensor"][c][int(len(9 * d["diffusion_tensor"]["time"]) / 10):]:
+            for v in d["diffusion_tensor"][c][int(len(3 * d["diffusion_tensor"]["time"]) / 4):]:
               if not math.isnan(v):
                 count += 1
                 total += v

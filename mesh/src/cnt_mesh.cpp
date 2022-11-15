@@ -740,6 +740,13 @@ void cnt_mesh::add_bundle_in_xz(bool parallel, float offset) {
 		my_tube5.constraints.push_back(centerSpring5);
 		my_tube6.constraints.push_back(centerSpring6);
 		my_tube7.constraints.push_back(centerSpring7);
+		my_bundle.constraints.push_back(centerSpring);
+		my_bundle.constraints.push_back(centerSpring2);
+		my_bundle.constraints.push_back(centerSpring3);
+		my_bundle.constraints.push_back(centerSpring4);
+		my_bundle.constraints.push_back(centerSpring5);
+		my_bundle.constraints.push_back(centerSpring6);
+		my_bundle.constraints.push_back(centerSpring7);
 
 		m_dynamicsWorld->addConstraint(circleSpring, false);
 		m_dynamicsWorld->addConstraint(circleSpring2, false);
@@ -767,6 +774,18 @@ void cnt_mesh::add_bundle_in_xz(bool parallel, float offset) {
 		my_tube1.constraints.push_back(circleSpring10);
 		my_tube1.constraints.push_back(circleSpring11);
 		my_tube1.constraints.push_back(circleSpring12);
+		my_bundle.constraints.push_back(circleSpring);
+		my_bundle.constraints.push_back(circleSpring2);
+		my_bundle.constraints.push_back(circleSpring3);
+		my_bundle.constraints.push_back(circleSpring4);
+		my_bundle.constraints.push_back(circleSpring5);
+		my_bundle.constraints.push_back(circleSpring6);
+		my_bundle.constraints.push_back(circleSpring7);
+		my_bundle.constraints.push_back(circleSpring8);
+		my_bundle.constraints.push_back(circleSpring9);
+		my_bundle.constraints.push_back(circleSpring10);
+		my_bundle.constraints.push_back(circleSpring11);
+		my_bundle.constraints.push_back(circleSpring12);
 
 		//All other tubes have just two hinge constraints
 
