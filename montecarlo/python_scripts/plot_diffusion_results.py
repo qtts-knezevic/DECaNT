@@ -154,7 +154,6 @@ def main():
                  "diffusion_tensor": pd.read_csv(f3, comment="#"),
                  "diffusion_length": pd.read_csv(f4, comment="#")
                  })
-
     f0.close()
     f1.close()
     f2.close()
@@ -167,8 +166,6 @@ def main():
   # data 
   x_axis = 0
   y_axis = []
-  
-  # Maybe preview plot and then have option for editing???
   
   # loop broken internally
   while 1:
@@ -288,7 +285,7 @@ def main():
     if len(input_val) == 1 and input_val[0] == "Y":
       prompt("Width, height in inches (space-separated)", ins)
       input_val = take_input(ins)
-      plots[-1].resize(list(map(float, input_val.split())));
+      plots[-1].resize(list(map(float, input_val.split())))
     
     x_log, y1_log, y2_log = (False, False, False)
     
@@ -306,7 +303,6 @@ def main():
       y2_log = len(input_val) == 1 and input_val[0] == "Y"
 
     plots[-1].make_scales_log(x_log, y1_log, y2_log)
-    
     
     prompt("All plots created? (Y/y to exit plot menu)", ins)
     input_val = take_input(ins).upper()
@@ -377,7 +373,7 @@ class plotObj:
     self.x = x
     self.y = y
     self.data = data
-    self.plot = None;
+    self.plot = None
 
   # end __init__
     
@@ -430,7 +426,7 @@ class plotObj:
       if len(seen_params["bundle"]) > 1:
         data_set_class += "bundled " if bool(d["mesh_input"]["bundle"]) else "single "
       if len(seen_params["parallel"]) > 1:
-        data_set_class += "parallel " if  bool(d["mesh_input"]["bundle"]) else "random "
+        data_set_class += "parallel " if  bool(d["mesh_input"]["parallel"]) else "random "
       
       for i in range(len(X_KEYS)):
         if X_KEYS[i] != None and i != self.x and len(seen_params[i]) > 1:
@@ -482,15 +478,26 @@ class plotObj:
       # modulus for safety but there should never be more than 9
       used_pt_markers.update({data_set_classes[i]: pt_markers[i % len(pt_markers)]})
 
+    # first legend: identify coefficients (labeled by color)
     if len(used_pt_colors) > 1:
       ax.legend(handles=[mpatches.Patch(color=used_pt_colors[c], label=c) for c in y_plotted_only], loc="upper left", bbox_to_anchor=(0, -0.125))
 
     ax.set_xlabel(X_LABELS[self.x])
     
     if self.x == TIME:
+      # second legend: identify data sets (parameters/morphologies) (labeled by line style)
       if len(used_linestyles) > 1:
-        ax.add_artist(ax.get_legend())
+        left_legend = ax.get_legend()
         ax.legend(handles=[mlines.Line2D([], [], linestyle=used_linestyles[s], label=s) for s in data_set_classes], loc="upper right", bbox_to_anchor=(1, -0.125))
+        
+        # matplotlib only correctly arranges the figure for the current legend, not other artists, leading to overflow
+        # (until figure is saved, at which point bbox_inches='tight' can be specified), so make ax.legend the taller legend
+        if len(data_set_classes) < len(y_plotted_only):
+          ax.add_artist(ax.get_legend())
+          ax.legend(handles=[mpatches.Patch(color=used_pt_colors[c], label=c) for c in y_plotted_only], loc="upper left", bbox_to_anchor=(0, -0.125))
+        else:
+          ax.add_artist(left_legend)
+          
       
       # plotting over time: list of time values vs list of data values can be plotted directly
       for d in self.data:
@@ -515,9 +522,18 @@ class plotObj:
       # end for
       
     else:
+      # second legend: identify data sets (parameters/morphologies) (labeled by line shape)
       if len(used_pt_markers) > 1:
-        ax.add_artist(ax.get_legend())
+        left_legend = ax.get_legend()
         ax.legend(handles=[mlines.Line2D([], [], marker=used_pt_markers[s], label=s) for s in data_set_classes], loc="upper right", bbox_to_anchor=(1, -0.125))
+        
+        # matplotlib only correctly arranges the figure for the current legend, not other artists, leading to overflow
+        # (until figure is saved, at which point bbox_inches='tight' can be specified), so make ax.legend the taller legend
+        if len(data_set_classes) < len(y_plotted_only):
+          ax.add_artist(ax.get_legend())
+          ax.legend(handles=[mpatches.Patch(color=used_pt_colors[c], label=c) for c in y_plotted_only], loc="upper left", bbox_to_anchor=(0, -0.125))
+        else:
+          ax.add_artist(left_legend)
       
       # final vales for diffusion tensor coeffs, avg displacement coeffs, averages for diffusion length
       # (final values for coefficients taken as average of latter quarter of data, compromise between effect of quenching
@@ -611,7 +627,7 @@ class plotObj:
       self.create_plot()
 
     if len(size) > 1:
-      self.plot.set_size_inches(size[0], size[1]);
+      self.plot.set_size_inches(size[0], size[1])
 
     self.plot.tight_layout()
   # end resize
