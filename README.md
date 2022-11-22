@@ -10,14 +10,14 @@ Official implementation of [DECaNT: Simulation Tool for Diffusion of Excitons in
 Dependency
 -------------
 This project is intented to run on linux or linux-like operating systems. The following external libraries are required:
-   - Python 3 (and six modules)
+   - Python 3
    - Armadillo
    - BulletPhysics
 ### Python 3
 Python 3 is often pre-installed on linux systems. If Python 3 is not present, install it with:
    $ sudo apt install python3
 
-The following python modules must then be installed:
+The following python modules must then be installed, if not already:
    $ pip3 install numpy
    $ pip3 install scipy
    $ pip3 install matplotlib
@@ -75,7 +75,7 @@ Monte Carlo Simulation
 ### Code Structure
 The most important code is contained in the monte_carlo folder. The code is divided into three major class structures: "simulation", "exciton", and "scattering site". Each class has its own properties and methods. The simulation object is used to control things like boundary conditions, simulation domain trimming, and the construction of exciton and scattering site objects. The output of the simulation is a file containing exciton displacement and position at each time step.
 
-Other folders contain complementary code that is used to calculate exciton bandstructure and transfer rates. These will be called by the Monte Carlo simulation code as needed to generate the appropriate scattering tables.
+Other folders contain complementary code that is used to calculate exciton band structure and transfer rates. These will be called by the Monte Carlo simulation code as needed to generate the appropriate scattering tables.
 
 Controlling the Monte Carlo simulation is best done using the input file.
 
@@ -88,6 +88,16 @@ First, navigate to the folder containing the project and use the makefile to gen
 Then, modify input.json as needed, and run main.exe
 
     $ main.exe input.json
+    
+The results of a monte carlo simulation (diffusion tensor, displacement, and diffusion lengths), or multiple simulations together, may be visualized quickly using a provided script.
+
+    $ cd montecarlo/python_scripts
+    $ python3 plot_results.py
+
+Plots are generated along with the user input that specified them. This input file may be modified if needed, then reused through input redirection. For example, to recreate the last plots created: 
+
+	$ python3 plot_results.py < last_input.log
+
 
 Introduction Video
 ----------------

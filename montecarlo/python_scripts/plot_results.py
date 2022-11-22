@@ -348,7 +348,7 @@ def main():
   saved_input_file.write("\n".join(ins) + "\n")
   saved_input_file.close()
 
-  print("If any plots were specified incorrectly, the input.log file can be modified and piped as input to this script to produce corrected graphs")
+  print("If any plots were specified incorrectly, the input.log file can be modified and used as input to this script to produce corrected versions.")
 # end main
 
 
