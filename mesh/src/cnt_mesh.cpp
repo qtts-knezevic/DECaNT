@@ -60,30 +60,30 @@ void cnt_mesh::create_ground_plane() {
 
 void cnt_mesh::create_z_plane() {
 
-	 // create the z direction side wall planes
-	 {
-	 	btCollisionShape* groundShape = new btStaticPlaneShape(btVector3(0, 0, 1), 0); // plane collision shape with an offset of 0 unit from the origin
-	 	m_collisionShapes.push_back(groundShape);
+	// create the z direction side wall planes
+	{
+		btCollisionShape* groundShape = new btStaticPlaneShape(btVector3(0, 0, 1), 0); // plane collision shape with an offset of 0 unit from the origin
+		m_collisionShapes.push_back(groundShape);
 
-	 	btScalar mass(0.);
+		btScalar mass(0.);
 
-	 	btTransform groundTransform;
-	 	groundTransform.setIdentity();
-	 	groundTransform.setOrigin(btVector3(0,0,-_half_Lz));
-	 	createRigidBody(mass,groundTransform,groundShape, btVector4(0,0,1,1)); // I think the last input is not used for anything. On paper it is supposed to be the collor
-	 }
+		btTransform groundTransform;
+		groundTransform.setIdentity();
+		groundTransform.setOrigin(btVector3(0,0,-_half_Lz));
+		createRigidBody(mass,groundTransform,groundShape, btVector4(0,0,1,1)); // I think the last input is not used for anything. On paper it is supposed to be the collor
+	}
 
-	 {
-	 	btCollisionShape* groundShape = new btStaticPlaneShape(btVector3(0, 0, -1), 0); // plane collision shape with an offset of 0 unit from the origin
-	 	m_collisionShapes.push_back(groundShape);
+	{
+		btCollisionShape* groundShape = new btStaticPlaneShape(btVector3(0, 0, -1), 0); // plane collision shape with an offset of 0 unit from the origin
+		m_collisionShapes.push_back(groundShape);
 
-	 	btScalar mass(0.);
+		btScalar mass(0.);
 
-	 	btTransform groundTransform;
-	 	groundTransform.setIdentity();
-	 	groundTransform.setOrigin(btVector3(0,0,_half_Lz));
-	 	createRigidBody(mass,groundTransform,groundShape, btVector4(0,0,1,1)); // I think the last input is not used for anything. On paper it is supposed to be the collor
-	 }
+		btTransform groundTransform;
+		groundTransform.setIdentity();
+		groundTransform.setOrigin(btVector3(0,0,_half_Lz));
+		createRigidBody(mass,groundTransform,groundShape, btVector4(0,0,1,1)); // I think the last input is not used for anything. On paper it is supposed to be the collor
+	}
 
 
 	//  // create the x direction side wall planes

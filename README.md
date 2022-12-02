@@ -44,6 +44,7 @@ Mesh Generation
 Properties of carbon nanotubes, such as length, segment length, tube chirality, etc., are stored in arrays that are properties of the class "cnt_mesh". The entire mesh of carbon nanotubes is an instance of the class "cnt_mesh". The methods defined in this class construct carbon nanotubes out of segments, apply constraints, and drop the nanotube from a specific height. Main.cpp will act as an upper-level structure to set up and run the BulletPhysics scene and also call functions in cnt_mesh to generate new tubes. The output file will record the position, orientation and chirality of each carbon nanotube segments. More detailed explanation can be found [Here](https://github.com/amirhosseindavoody/carbon_nanotube_mesh).
 
 After generating the film, we use a python script to increase the density of gridpoints along the length of each tube using interpolation. Once the interpolation is finished, the script sets the gridpoints along each tube to act as scattering sites in the Monte Carlo simulation.
+
 ### Run example
 First, navigate to the folder containing the project and use the makefile to generate the executable program.
 
@@ -54,10 +55,15 @@ Then, modify input.json as needed, and run main.exe
 
     $ main.exe input.json
 
-Run the python script.
+Run the python script. It will act on the directory specified on line 20, which is automatically set to the most recently generated directory after main.exe is run.
 
     $ cd python_scripts
     $ python3 create_fine_mesh.py
+
+Or, do both (the script will generate the interpolated points and output a 3D plot of the tubes):
+
+	$ make run
+
 ### Visual tool
 First, open mesh folder and modify makefile line 8 from: 
 
@@ -68,7 +74,7 @@ to:
     $ CFLAGS = -I $(BULLET)/src/ -std=c++17 -DVISUAL
     
 Then, modify input.json's "visualize" field to be "true".
-Now, the program will generate an additional window displaying current simulation scene. **Note: this functionality will only work at linux platforms with X11 function support. If the user is using Windows linux subsystem, one can access the functionality with platforms like mobaxterm.**
+Now, the program will generate an additional window displaying current simulation scene. **Note: this functionality will only work on linux platforms with X11 function support. If the user is using Windows linux subsystem, one can access the functionality with platforms like mobaxterm.**
 
 Monte Carlo Simulation
 ----------------
@@ -101,4 +107,4 @@ Plots are generated along with the user input that specified them. This input fi
 
 Introduction Video
 ----------------
-[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/lAowb9l5AuY/0.jpg)](https://www.youtube.com/watch?v=lAowb9l5AuY)
+[![Title slide reading Simulating Exiton Diffusion in Carbon Nanotube Films](https://img.youtube.com/vi/lAowb9l5AuY/0.jpg)](https://www.youtube.com/watch?v=lAowb9l5AuY)

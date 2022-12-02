@@ -77,7 +77,7 @@ struct cnt_mesh : public CommonRigidBodyBase
 	btVector3 drop_coordinate(float offset); // this method gives the appropriate coordinate for releasing the next tube
 	btVector3 drop_para_coordinate(float offset);
 
-  public:
+	public:
 	// constructor
 	cnt_mesh(struct GUIHelperInterface* helper, nlohmann::json j): CommonRigidBodyBase(helper) {
 		std::srand(std::time(0)); // use current time as seed for random generator
@@ -160,11 +160,11 @@ struct cnt_mesh : public CommonRigidBodyBase
 
 	float calc_diam(int _m, int _n){
 		double _a_cc = 1.42e-1; // carbon-carbon distance [meters]
- 		double _a_l = std::sqrt(float(3.0))*_a_cc; // graphene lattice constants [meters]
+		double _a_l = std::sqrt(float(3.0))*_a_cc; // graphene lattice constants [meters]
 		double _circum = _a_l*std::sqrt(float(_n*_n+_m*_m+_n*_m));
 		double pi= 3.141592;
-  		// cnt radius
- 		return (_circum/pi);
+		// cnt radius
+		return (_circum/pi);
 
 	}
 

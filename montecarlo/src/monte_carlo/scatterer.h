@@ -24,9 +24,9 @@ private:
   typedef std::vector<std::vector<scattering_struct*>> scatt_t;
   typedef std::vector<std::vector<int>> map_t;
 
-	double _max_rate; // maximum scattering rate in the scattering table
-	double _inverse_max_rate; // inverse of the maximum scattering rate which is the lifetime
-	arma::vec _pos; // position of the scatterer
+  double _max_rate; // maximum scattering rate in the scattering table
+  double _inverse_max_rate; // inverse of the maximum scattering rate which is the lifetime
+  arma::vec _pos; // position of the scatterer
   arma::vec _orientation; // orientation of the scattering object site
   arma::vec _chirality; // chirality of scattering site
   bool _is_quench = false; // whether it acts as a quenching site or not
@@ -53,7 +53,7 @@ public:
 
 public:
 
-	// default constructor
+  // default constructor
   //scatterer(): _max_rate(0), _inverse_max_rate(0), right(-1), left(-1), scat_tab(nullptr) {};
   scatterer(): _max_rate(0), _inverse_max_rate(0), right(-1), left(-1) {};
 

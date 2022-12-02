@@ -77,8 +77,8 @@ int main(int argc, char* argv[]) {
 	int number_of_tubes_before_deletion = j["number of tubes before deletion"];
 	int number_of_unsaved_tubes = j["number of unsaved tubes"];
 	int number_of_bundles = j["number of bundles"];
-        int number_of_steps = j["number_of_steps"];
-        btScalar time_step = j["time_step"];
+	int number_of_steps = j["number_of_steps"];
+	btScalar time_step = j["time_step"];
 	bool parallel = j["parallel"];
 	bool bundle = j["bundle"];
 	double spacing = j["cnt intertube spacing [nm]"];
@@ -149,12 +149,12 @@ int main(int argc, char* argv[]) {
 				// add this many cnt's at a time
 				for (int i=0; i<number_of_tubes_added_together; i++)
 				{
-					// each successive tube generated higher such that non-parallel bundles don't generate intersecting
-					// (the fibers will interleave and keep them intersecting). single tubes also offset, just in case...
-					if(bundle)
+					// each successive bundle generated higher such that non-parallel bundles don't generate intersecting
+					// (the fibers will interleave and keep them intersecting).
+					if (bundle)
 						example->add_bundle_in_xz(parallel, float(i) * 2.0);
 					else 
-						example->add_single_tube_in_xz(parallel, float(i));
+						example->add_single_tube_in_xz(parallel, 0.0);
 					
 				}
 			}

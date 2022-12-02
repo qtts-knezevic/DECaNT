@@ -28,7 +28,7 @@ namespace mc
     }
 
     return nlist[right].second;
-	};
+  };
 
   // find neighbors of the current scatterer and their scattering rates
   std::vector<std::pair<double, scatterer*>> scatterer::find_neighbors(const double& max_hopping_radius) const {
@@ -62,7 +62,7 @@ namespace mc
 
         //double rate = scat_tab->get_rate(theta, z_shift, axis_shift_1, axis_shift_2);
         double rate = scat_tab[chiral_index(this->chirality())][chiral_index(s2.chirality())]->get_rate(theta, z_shift, axis_shift_1, axis_shift_2);
-	//double rate = 5;
+        //double rate = 5;
 
         std::pair<double, scatterer*> p = {rate, &s2};
 

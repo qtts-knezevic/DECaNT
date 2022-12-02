@@ -60,7 +60,7 @@ namespace mc
         for (int k = 0; k < size(cnts); k++) {
           std::experimental::filesystem::path path_ref =_scatter_table_directory.path();
           path_ref /= std::to_string(cnts[i].chirality()[0])+std::to_string(cnts[i].chirality()[1])+std::to_string(cnts[k].chirality()[0])
-        	+std::to_string(cnts[k].chirality()[1])+"_"+std::to_string(j["temperature [kelvin]"].get<float>())+"_"+std::to_string(epsr)+"scat_table";
+                     +std::to_string(cnts[k].chirality()[1])+"_"+std::to_string(j["temperature [kelvin]"].get<float>())+"_"+std::to_string(epsr)+"scat_table";
 
           if (check_scat_tab(path_ref))
             all_tables[i][k] = recovery_scatt_table(j, path_ref,cnts[i], cnts[k]);
@@ -117,12 +117,12 @@ namespace mc
       i_th++;});
 
     scattering_struct scat_table(rate,theta,z_shift,axis_shift_1,axis_shift_2, d_cnt.chirality(), a_cnt.chirality(), epsr,
-    		j["temperature [kelvin]"].get<float>());
+                                 j["temperature [kelvin]"].get<float>());
 
     std::experimental::filesystem::path path_out =_output_directory.path();
     path_out /= std::to_string(d_cnt.chirality()[0])+std::to_string(d_cnt.chirality()[1])+std::to_string(a_cnt.chirality()[0])
-    		+std::to_string(a_cnt.chirality()[1])+"_"+std::to_string(j["temperature [kelvin]"].get<float>())
-    		+"_"+std::to_string(epsr)+"scat_table";
+               +std::to_string(a_cnt.chirality()[1])+"_"+std::to_string(j["temperature [kelvin]"].get<float>())
+               +"_"+std::to_string(epsr)+"scat_table";
     std::experimental::filesystem::create_directory(path_out);
 
     scat_table.save_visible(path_out);
@@ -203,7 +203,7 @@ namespace mc
     }
 
     scattering_struct scat_table(rate,theta,z_shift,axis_shift_1,axis_shift_2, d_cnt.chirality(), a_cnt.chirality(), epsr,
-    		j["temperature [kelvin]"].get<float>());
+                                 j["temperature [kelvin]"].get<float>());
 
     double max_rate = 0;
     double min_rate = 10e15;
@@ -559,7 +559,7 @@ namespace mc
     double Dij, D1, D2, D3;
     for(int i = 0; i < 3; i++){
       for(int j = i; j < 3; j++){
-      	D1 = 0; D2 = 0; D3 = 0;
+        D1 = 0; D2 = 0; D3 = 0;
         for(const auto& p : _particle_list){
           D1 += p.delta_pos(i)*p.delta_pos(j);
           D2 += p.delta_pos(i);

@@ -86,12 +86,12 @@ inline std::experimental::filesystem::directory_entry check_directory(std::strin
   {
     if (create_if_absent)
     {
-    	std::cout << "created the directory!" << std::endl;
-    	fs::create_directories(directory.path());
+      std::cout << "created the directory!" << std::endl;
+      fs::create_directories(directory.path());
     }
     else
     {
-    	std::cout << "warning: output directory does NOT exist!!!" << std::endl;
+      std::cout << "warning: output directory does NOT exist!!!" << std::endl;
     }
     if (not fs::is_directory(directory.path())) throw std::invalid_argument("The input value for output directory is not acceptable.");
     return directory;

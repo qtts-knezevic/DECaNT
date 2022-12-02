@@ -165,7 +165,7 @@ private:
     _input_directory = check_directory(directory_path, false);
   };
 
-	// get the mc simulation time
+  // get the mc simulation time
   const double& time() const { return _time; };
 
   // get constant reference to the output_directory
@@ -184,11 +184,11 @@ private:
   unsigned number_of_particles() const { return _particle_list.size(); };
 
   double calc_diam(int _m, int _n){
-		double _a_cc = 1.42e-10; // carbon-carbon distance [nm]
- 		double _a_l = std::sqrt(float(3.0))*_a_cc; // graphene lattice constants [nm]
-		double _circum = _a_l*std::sqrt(float(_n*_n+_m*_m+_n*_m));
-		double pi=3.141592;
- 		return (_circum/pi);
+    double _a_cc = 1.42e-10; // carbon-carbon distance [nm]
+    double _a_l = std::sqrt(float(3.0))*_a_cc; // graphene lattice constants [nm]
+    double _circum = _a_l*std::sqrt(float(_n*_n+_m*_m+_n*_m));
+    double pi=3.141592;
+    return (_circum/pi);
   }
 
   // initialize the simulation condition
@@ -230,7 +230,7 @@ private:
     _c2_pop = 0;
 
     _particle_list = create_particles(_domain, _n_seg, _all_scat_list, _c1_pop, _c2_pop);
-	};
+  };
 
   // read in the coordinate of all the cnt segments or molecules and create the scatterer objects that manage
   // particle hopping between the sites
@@ -404,18 +404,18 @@ private:
 
   // save the json properties that is read and parsed from the input_json file.
   void save_json_properties() {
-  	std::ofstream json_file;
-  	json_file.open(_output_directory.path() / "input.json", std::ios::out);
-  	json_file << std::setw(4) << _json_prop << std::endl;
-  	json_file.close();
-  	
-  	// also save the mesh generation properties used
-  	std::string mesh_path = _json_prop["mesh input directory"];
-  	std::experimental::filesystem::directory_entry mesh_directory;
-  	mesh_directory.assign(mesh_path); // function shouldn't be called if mesh directory not already read from...
-  	std::experimental::filesystem::copy_file(mesh_directory.path() / "input.json",
-  		_output_directory.path() / "mesh_input.json");
-  	
+    std::ofstream json_file;
+    json_file.open(_output_directory.path() / "input.json", std::ios::out);
+    json_file << std::setw(4) << _json_prop << std::endl;
+    json_file.close();
+    
+    // also save the mesh generation properties used
+    std::string mesh_path = _json_prop["mesh input directory"];
+    std::experimental::filesystem::directory_entry mesh_directory;
+    mesh_directory.assign(mesh_path); // function shouldn't be called if mesh directory not already read from...
+    std::experimental::filesystem::copy_file(mesh_directory.path() / "input.json",
+                                             _output_directory.path() / "mesh_input.json");
+    
   };
 
   // find minimum of the minimum coordinates of the scattering objects, this function will effectively give us the
@@ -528,11 +528,11 @@ private:
       s.chirality_map = _chirality_map;
       s.scat_tab.resize(tube_size);
       for (int i = 0; i < tube_size; i++) {
-		  s.scat_tab[i] = std::vector<scattering_struct*>(tube_size);
-		  for (int j = 0; j < tube_size; j++) {
-			  s.scat_tab[i][j] = &_scat_tabs[i][j];
-		  }
-	  }
+        s.scat_tab[i] = std::vector<scattering_struct*>(tube_size);
+        for (int j = 0; j < tube_size; j++) {
+          s.scat_tab[i][j] = &_scat_tabs[i][j];
+        }
+      }
     }
     std::cout <<"th tube's chirality: [" << _chirality_map[0][0] << ", " << _chirality_map[0][1] << "]" << std::endl;
   }
@@ -946,87 +946,87 @@ private:
   //                 num_pop - number of particles added initially to the domain
   void calc_diffusion(double dt, int num_pop) {
 
-	  // assert(_particle_list.empty() && "particle list is not empty!");
+    // assert(_particle_list.empty() && "particle list is not empty!");
 
     double ymin = _domain.first(1);
-	  double ymax = _domain.second(1);
-	  double dy = (ymax - ymin) / double(_n_seg);
+    double ymax = _domain.second(1);
+    double dy = (ymax - ymin) / double(_n_seg);
 
-	  double y1 = ymin;
-	  double y2 = ymin + dy;
+    double y1 = ymin;
+    double y2 = ymin + dy;
 
-	  std::vector<particle> p_list;
-	  repopulate(y1, y2, num_pop, _c1_scat, p_list);
-	  
-	  std::vector<double> orig_pos0;
-	  std::vector<double> orig_pos1;
-	  std::vector<double> orig_pos2;
+    std::vector<particle> p_list;
+    repopulate(y1, y2, num_pop, _c1_scat, p_list);
+    
+    std::vector<double> orig_pos0;
+    std::vector<double> orig_pos1;
+    std::vector<double> orig_pos2;
 
-	  for (unsigned i = 0; i < p_list.size();i++) {
-		  orig_pos0.emplace_back(p_list[i].pos(0));
-		  orig_pos1.emplace_back(p_list[i].pos(1));
-		  orig_pos2.emplace_back(p_list[i].pos(2));
-	  }
+    for (unsigned i = 0; i < p_list.size();i++) {
+      orig_pos0.emplace_back(p_list[i].pos(0));
+      orig_pos1.emplace_back(p_list[i].pos(1));
+      orig_pos2.emplace_back(p_list[i].pos(2));
+    }
 
 
-	  std::stringstream filename;
-	  std::string base = _output_directory.path() / "mean_square_displacement.dat";
-	  filename  << base;
-	  std::ofstream file(filename.str().c_str(), std::ios::out);
+    std::stringstream filename;
+    std::string base = _output_directory.path() / "mean_square_displacement.dat";
+    filename  << base;
+    std::ofstream file(filename.str().c_str(), std::ios::out);
 
-	  file << std::scientific << std::showpos << std::scientific;
+    file << std::scientific << std::showpos << std::scientific;
 
-	  y1 = ymin + double(_n_seg - 1) * dy;
-	  y2 = ymax;
+    y1 = ymin + double(_n_seg - 1) * dy;
+    y2 = ymax;
 
-	  unsigned num_left = p_list.size();
-	  std::cout << num_left;
-	  unsigned time = 0;
-	  while (num_left > 0) {
-		  double total_square_displace = 0;
-		
+    unsigned num_left = p_list.size();
+    std::cout << num_left;
+    unsigned time = 0;
+    while (num_left > 0) {
+      double total_square_displace = 0;
+    
 
-		  for (unsigned i = 0; i < num_left;) {
-			  if (p_list[i].pos(1) >= y1) {
-				 /* std::swap(p_list[i], p_list[num_left-1]);
-				  std::swap(orig_pos0[i], orig_pos0[num_left - 1]);
-				  std::swap(orig_pos1[i], orig_pos1[num_left - 1]);
-				  std::swap(orig_pos2[i], orig_pos2[num_left - 1]);*/
-				  p_list.erase(p_list.begin()+i);
-				  orig_pos0.erase(orig_pos0.begin()+i);
-				  orig_pos1.erase(orig_pos1.begin()+i);
-				  orig_pos2.erase(orig_pos2.begin()+i);
-				  num_left=p_list.size();
-			  }
-			  else {
-				  p_list[i].step(dt, _all_scat_list, _max_hopping_radius, _max_dissolving_radius);
-				  double square_displace = (p_list[i].pos(0) - orig_pos0[i]) * (p_list[i].pos(0) - orig_pos0[i]) +
-					  (p_list[i].pos(1) - orig_pos1[i]) * (p_list[i].pos(1) - orig_pos1[i]) +
-					  (p_list[i].pos(2) - orig_pos2[i]) * (p_list[i].pos(2) - orig_pos2[i]);
-				  total_square_displace = total_square_displace + square_displace;
-				  i++;
-			  }
-		  }
-		  time++;
-		  std::cout << "\r" <<"Number of particle left: " <<num_left<<" Simulation time: "<< time;
-		  file << "   " << double(total_square_displace/num_left) << "   \n";
-	  }
-	  
-	  file << std::endl;
+      for (unsigned i = 0; i < num_left;) {
+        if (p_list[i].pos(1) >= y1) {
+         /* std::swap(p_list[i], p_list[num_left-1]);
+          std::swap(orig_pos0[i], orig_pos0[num_left - 1]);
+          std::swap(orig_pos1[i], orig_pos1[num_left - 1]);
+          std::swap(orig_pos2[i], orig_pos2[num_left - 1]);*/
+          p_list.erase(p_list.begin()+i);
+          orig_pos0.erase(orig_pos0.begin()+i);
+          orig_pos1.erase(orig_pos1.begin()+i);
+          orig_pos2.erase(orig_pos2.begin()+i);
+          num_left=p_list.size();
+        }
+        else {
+          p_list[i].step(dt, _all_scat_list, _max_hopping_radius, _max_dissolving_radius);
+          double square_displace = (p_list[i].pos(0) - orig_pos0[i]) * (p_list[i].pos(0) - orig_pos0[i]) +
+            (p_list[i].pos(1) - orig_pos1[i]) * (p_list[i].pos(1) - orig_pos1[i]) +
+            (p_list[i].pos(2) - orig_pos2[i]) * (p_list[i].pos(2) - orig_pos2[i]);
+          total_square_displace = total_square_displace + square_displace;
+          i++;
+        }
+      }
+      time++;
+      std::cout << "\r" <<"Number of particle left: " <<num_left<<" Simulation time: "<< time;
+      file << "   " << double(total_square_displace/num_left) << "   \n";
+    }
+    
+    file << std::endl;
 
-	  file.close();
-	  std::cout << std::endl;
+    file.close();
+    std::cout << std::endl;
   }
 
   /*unsigned j = p_list.size();
   for (unsigned i = 0; i < j;) {
-	  if (p_list[i].pos(1) >= ymin && p_list[i].pos(1) <= ymax) {
-		  --j;
-		  std::swap(p_list[i], p_list[j]);
-	  }
-	  else {
-		  ++i;
-	  }
+    if (p_list[i].pos(1) >= ymin && p_list[i].pos(1) <= ymax) {
+      --j;
+      std::swap(p_list[i], p_list[j]);
+    }
+    else {
+      ++i;
+    }
   }
   */
 

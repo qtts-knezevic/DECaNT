@@ -24,6 +24,11 @@ SRCDIR = ./src
 OBJDIR = ./obj
 HOMDIR = .
 
+main: object
+	@echo
+	$(CC) $(OPT) -o $@.exe $(OBJDIR)/*.o -Wl,--start-group $(LFLAGS) -Wl,--end-group
+	@echo
+
 object:
 	@echo
 	@mkdir -p $(OBJDIR)
@@ -33,17 +38,12 @@ object:
 # When using flags -Wl,--start-group and -Wl,--end-group the compiler resolves dependencies between libraries by going through the libraries multiple times.
 # These flags could have severe performance issues in compilation time.
 
-main: object
-	@echo
-	$(CC) $(OPT) -o $@.exe $(OBJDIR)/*.o -Wl,--start-group $(LFLAGS) -Wl,--end-group
-	@echo
-
 # Utility targets
 .PHONY: clean
 clean:
 	@rm -f *.o *.exe
 	@rm -rf $(OBJDIR)
 
-run: main
+run:
 	./main.exe
 	cd python_scripts; python3 create_fine_mesh.py --create_cnts --plot_cnts

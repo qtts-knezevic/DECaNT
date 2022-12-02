@@ -360,7 +360,7 @@ class plotObj:
   
   def __init__(self, title, x, y, data):
     '''
-    Constructor for plotObj
+    Constructor for plotObj. Sets its properties but does not yet crate mpl plot object.
 
     Parameters:
       title (str): title of this plot
@@ -379,10 +379,7 @@ class plotObj:
     
   def create_plot(self):
     '''
-    Creates this plot.
-
-    Returns:
-      This plot as mpl figure.
+    Creates this plot as mpl figure.
     '''
     
     fig = plt.figure(figsize=[8,6])
