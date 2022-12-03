@@ -1,5 +1,5 @@
 {
-    "output directory":"./parallel",
+    "output directory":"./cnt_mesh_fiber_test",
     "keep old files":false,
 
     "visualize":true,
@@ -23,6 +23,6 @@
     "number of bundles": 60000,
     "number_of_steps": 10,
     "time_step": 0.05,
-    "parallel": true,
+    "parallel": false,
     "bundle": false
 }
