@@ -60,7 +60,7 @@ Run the python script. It will act on the directory specified on line 20, which 
     $ cd python_scripts
     $ python3 create_fine_mesh.py
 
-Or, do both (the script will generate the interpolated points and output a 3D plot of the tubes):
+Or, do both (the script will generate the interpolated points and output a browser-based 3D plot of the tubes):
 
 	$ make run
 

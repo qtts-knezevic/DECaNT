@@ -17,7 +17,7 @@ from tube import fiber
 import util
 
 #IMPORTANT: do not move this line (it is overwritten by the mesh main program).
-DIR = '../bundled_random'
+DIR = '../cnt_mesh_fiber_test'
 
 # # customize matplotlib styles
 # mpl.rc('lines', linewidth=4)  # default linewidth
