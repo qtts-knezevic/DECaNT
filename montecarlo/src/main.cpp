@@ -60,7 +60,6 @@ int main(int argc, char *argv[]) {
   assert(j.count("exciton monte carlo")>0);
 
   double time_step = json_mc["monte carlo time step"];
-  int num_particle = json_mc["Number of particle in the simulation"];
 
   mc::monte_carlo sim(json_mc);
 

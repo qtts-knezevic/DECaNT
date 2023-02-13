@@ -12,7 +12,7 @@ class fiber:
   class describing a cnt fiber
   """
 
-  def __init__(self, r, chiral, scaleFactor=10):
+  def __init__(self, r, chiral, scaleFactor=1):
     '''
     Class constructor
     '''
@@ -109,7 +109,7 @@ class fiber:
     '''
     if hasattr(self,'_r_fine'):
       del self._r_fine
-    self._r = 10*self._r
+    self._r = factor*self._r
 
   def avg_y(self):
     '''
