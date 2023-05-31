@@ -20,7 +20,7 @@ X_KEYS = [None, ("mesh_input", "cnt intertube spacing [nm]", "spacing: "),
           ("input", "temperature [kelvin]", "T: "),
           ("input", "relative permittivity", "εr: ")]
 X_LABELS = ["Time [s]", "CNT tube spacing [m]", "Quenching site density [proportion]",
-            "Temperature [K], Relative permittivity"]
+            "Temperature [K]", "Relative permittivity"]
 
 # Y-AXIS GLOBALS
 AVG_DISPLACEMENT_SQUARED      = 0
@@ -675,7 +675,7 @@ class plotObj:
     if self.plot == None:
       self.create_plot()
     
-    self.plot.savefig(os.path.join(d, "plot" + str(n)))
+    self.plot.savefig(os.path.join(d, "plot" + str(n)), dpi=300)
 
   # end save_plot
 
