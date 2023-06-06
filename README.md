@@ -16,16 +16,16 @@ This project is intented to run on linux or linux-like operating systems. The fo
 ### Python 3
 Python 3 is often pre-installed on linux systems. If Python 3 is not present, install it with:
 
-   $ sudo apt install python3
+    $ sudo apt install python3
 
 The following python modules must then be installed, if not already:
 
-   $ pip3 install numpy
-   $ pip3 install scipy
-   $ pip3 install matplotlib
-   $ pip3 install tqdm
-   $ pip3 install pandas
-   $ pip3 install plotly
+    $ pip3 install numpy
+    $ pip3 install scipy
+    $ pip3 install matplotlib
+    $ pip3 install tqdm
+    $ pip3 install pandas
+    $ pip3 install plotly
    
 ### Armadillo
 Armadillo is a linear algebra library. Before installing armadillo, we need to make sure BLAS and LAPACK are installed. Installation:
